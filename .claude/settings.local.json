@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn -v)",
+      "Bash(mvn -q compile)",
+      "Bash(timeout 25 mvn -q javafx:run)",
+      "Bash(mvn -q dependency:build-classpath -Dmdep.outputFile=cp.txt)",
+      "Bash(java -cp \"target/classes;$\\(cat cp.txt\\)\" co.edu.poli.sw2.TestDaoTemporal)",
+      "Bash(\"/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -uroot -p1234 -e \"SHOW DATABASES;\")",
+      "Bash(\"/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -uroot -p1234 -e \"CREATE DATABASE IF NOT EXISTS appdrones CHARACTER SET utf8mb4;\")",
+      "Bash(\"/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -uroot -p1234 -e \"SHOW DATABASES LIKE 'appdrones';\")",
+      "Bash(\"/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -uroot -p1234 -e \"DELETE FROM appdrones.drone WHERE serial='SN-TEST-001';\")",
+      "Bash(rm -f \"/c/Users/Alvaro/OneDrive/Documentos/AppDrones/src/main/java/co/edu/poli/sw2/TestDaoTemporal.java\" \"/c/Users/Alvaro/OneDrive/Documentos/AppDrones/cp.txt\")",
+      "Bash(timeout 20 mvn -q javafx:run)"
+    ]
+  }
+}
