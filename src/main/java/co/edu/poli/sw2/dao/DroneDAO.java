@@ -16,11 +16,30 @@ import java.util.List;
  */
 public class DroneDAO implements CRUD<Drone> {
 
+    private static final String SQL_CREAR_TABLA = "CREATE TABLE IF NOT EXISTS drone (" +
+            "id_drone INT AUTO_INCREMENT PRIMARY KEY, " +
+            "`serial` VARCHAR(100) NOT NULL, " +
+            "modelo VARCHAR(100) NOT NULL, " +
+            "fabricante VARCHAR(100) NOT NULL, " +
+            "peso DOUBLE NOT NULL)";
+
+    /**
+     * Obtiene una conexion activa y garantiza que la tabla {@code drone} exista.
+     *
+     * @return conexion JDBC lista para usar.
+     * @throws SQLException si falla la conexion o la creacion de la tabla.
+     */
+    private Connection obtenerConexion() throws SQLException {
+        Connection connection = new Conexion().getConnection();
+        crearTabla(connection, SQL_CREAR_TABLA);
+        return connection;
+    }
+
     @Override
     public boolean crear(Drone obj) {
         String sql = "INSERT INTO drone (`serial`, modelo, fabricante, peso) VALUES (?, ?, ?, ?)";
 
-        try (Connection connection = new Conexion().getConnection();
+        try (Connection connection = obtenerConexion();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, obj.getSerial());
@@ -40,7 +59,7 @@ public class DroneDAO implements CRUD<Drone> {
         List<Drone> drones = new ArrayList<>();
         String sql = "SELECT id_drone, `serial`, modelo, fabricante, peso FROM drone";
 
-        try (Connection connection = new Conexion().getConnection();
+        try (Connection connection = obtenerConexion();
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sql)) {
 

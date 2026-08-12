@@ -3,6 +3,10 @@ package co.edu.poli.sw2.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Representa un dron administrado por la aplicacion, junto con el piloto
+ * que lo opera y los sensores y misiones asociados a el.
+ */
 public class Drone {
 
     private int idDrone;
@@ -10,12 +14,11 @@ public class Drone {
     private String modelo;
     private String fabricante;
     private double peso;
-    private List<Piloto> pilotos;
+    private Piloto piloto;
     private List<Sensor> sensores;
     private List<Mision> misiones;
 
     public Drone() {
-        this.pilotos = new ArrayList<>();
         this.sensores = new ArrayList<>();
         this.misiones = new ArrayList<>();
     }
@@ -69,12 +72,12 @@ public class Drone {
         this.peso = peso;
     }
 
-    public List<Piloto> getPilotos() {
-        return pilotos;
+    public Piloto getPiloto() {
+        return piloto;
     }
 
-    public void setPilotos(List<Piloto> pilotos) {
-        this.pilotos = pilotos;
+    public void setPiloto(Piloto piloto) {
+        this.piloto = piloto;
     }
 
     public List<Sensor> getSensores() {
@@ -101,7 +104,7 @@ public class Drone {
                 ", modelo='" + modelo + '\'' +
                 ", fabricante='" + fabricante + '\'' +
                 ", peso=" + peso +
-                ", pilotos=" + pilotos +
+                ", piloto=" + piloto +
                 ", sensores=" + sensores +
                 ", misiones=" + misiones +
                 '}';

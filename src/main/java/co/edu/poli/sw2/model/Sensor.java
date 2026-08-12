@@ -1,5 +1,8 @@
 package co.edu.poli.sw2.model;
 
+/**
+ * Representa un sensor instalado en un dron (por ejemplo, camara, GPS o LIDAR).
+ */
 public class Sensor {
 
     private int idSensor;

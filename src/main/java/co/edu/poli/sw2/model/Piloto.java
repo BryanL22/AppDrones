@@ -1,5 +1,8 @@
 package co.edu.poli.sw2.model;
 
+/**
+ * Representa al piloto responsable de operar un dron y sus misiones.
+ */
 public class Piloto {
 
     private int idPiloto;

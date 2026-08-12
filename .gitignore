@@ -1,0 +1,10 @@
+# Variables de entorno locales (credenciales de base de datos, etc.)
+.env
+
+# Maven
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
