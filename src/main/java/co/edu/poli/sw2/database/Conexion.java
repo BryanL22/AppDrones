@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -79,26 +80,41 @@ public class Conexion {
      * @return mapa con las variables encontradas; vacio si el archivo no existe.
      */
     private static Map<String, String> cargarArchivoEnv() {
-        Map<String, String> variables = new HashMap<>();
         Path ruta = Path.of(ENV_FILE);
 
         if (!Files.exists(ruta)) {
-            return variables;
+            return new HashMap<>();
         }
 
         try {
-            for (String linea : Files.readAllLines(ruta)) {
-                String texto = linea.trim();
-                if (texto.isEmpty() || texto.startsWith("#") || !texto.contains("=")) {
-                    continue;
-                }
-                int separador = texto.indexOf('=');
-                String clave = texto.substring(0, separador).trim();
-                String valor = texto.substring(separador + 1).trim();
-                variables.put(clave, valor);
-            }
+            return parsearEnv(Files.readAllLines(ruta));
         } catch (IOException e) {
             e.printStackTrace();
+            return new HashMap<>();
+        }
+    }
+
+    /**
+     * Interpreta el contenido de un archivo {@code .env} ya leido en
+     * memoria. Metodo de paquete (sin modificador de acceso) para poder
+     * probarlo directamente desde las pruebas unitarias, sin depender del
+     * sistema de archivos.
+     *
+     * @param lineas lineas del archivo {@code .env}.
+     * @return mapa con las variables encontradas.
+     */
+    static Map<String, String> parsearEnv(List<String> lineas) {
+        Map<String, String> variables = new HashMap<>();
+
+        for (String linea : lineas) {
+            String texto = linea.trim();
+            if (texto.isEmpty() || texto.startsWith("#") || !texto.contains("=")) {
+                continue;
+            }
+            int separador = texto.indexOf('=');
+            String clave = texto.substring(0, separador).trim();
+            String valor = texto.substring(separador + 1).trim();
+            variables.put(clave, valor);
         }
 
         return variables;

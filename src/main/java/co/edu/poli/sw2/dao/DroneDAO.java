@@ -81,19 +81,64 @@ public class DroneDAO implements CRUD<Drone> {
 
     @Override
     public Drone obtenerPorId(int id) {
-        // TODO: implementar consulta de un Drone por su identificador
+        String sql = "SELECT id_drone, `serial`, modelo, fabricante, peso FROM drone WHERE id_drone = ?";
+
+        try (Connection connection = obtenerConexion();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return new Drone(
+                            resultSet.getInt("id_drone"),
+                            resultSet.getString("serial"),
+                            resultSet.getString("modelo"),
+                            resultSet.getString("fabricante"),
+                            resultSet.getDouble("peso")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
 
     @Override
     public boolean actualizar(Drone obj) {
-        // TODO: implementar actualizacion de un Drone existente
-        return false;
+        String sql = "UPDATE drone SET `serial` = ?, modelo = ?, fabricante = ?, peso = ? WHERE id_drone = ?";
+
+        try (Connection connection = obtenerConexion();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, obj.getSerial());
+            statement.setString(2, obj.getModelo());
+            statement.setString(3, obj.getFabricante());
+            statement.setDouble(4, obj.getPeso());
+            statement.setInt(5, obj.getIdDrone());
+
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
     public boolean eliminar(int id) {
-        // TODO: implementar eliminacion de un Drone por su identificador
-        return false;
+        String sql = "DELETE FROM drone WHERE id_drone = ?";
+
+        try (Connection connection = obtenerConexion();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, id);
+
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

@@ -31,17 +31,20 @@
             <ColumnConstraints minWidth="220"/>
         </columnConstraints>
 
-        <Label text="Serial:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtSerial" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtId" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-        <Label text="Modelo:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtModelo" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <Label text="Serial:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtSerial" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-        <Label text="Fabricante:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtFabricante" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <Label text="Modelo:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtModelo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-        <Label text="Peso (kg):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtPeso" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <Label text="Fabricante:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtFabricante" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="Peso (kg):" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtPeso" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
     </GridPane>
 
     <HBox alignment="CENTER" spacing="10">
