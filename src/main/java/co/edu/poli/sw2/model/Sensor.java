@@ -5,25 +5,25 @@ package co.edu.poli.sw2.model;
  */
 public class Sensor {
 
-    private int idSensor;
+    private String id;
     private String tipo;
     private String fabricante;
 
     public Sensor() {
     }
 
-    public Sensor(int idSensor, String tipo, String fabricante) {
-        this.idSensor = idSensor;
+    public Sensor(String id, String tipo, String fabricante) {
+        this.id = id;
         this.tipo = tipo;
         this.fabricante = fabricante;
     }
 
-    public int getIdSensor() {
-        return idSensor;
+    public String getId() {
+        return id;
     }
 
-    public void setIdSensor(int idSensor) {
-        this.idSensor = idSensor;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getTipo() {
@@ -45,7 +45,7 @@ public class Sensor {
     @Override
     public String toString() {
         return "Sensor{" +
-                "idSensor=" + idSensor +
+                "id='" + id + '\'' +
                 ", tipo='" + tipo + '\'' +
                 ", fabricante='" + fabricante + '\'' +
                 '}';

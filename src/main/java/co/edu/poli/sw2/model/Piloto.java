@@ -1,31 +1,31 @@
 package co.edu.poli.sw2.model;
 
 /**
- * Representa al piloto responsable de operar un dron y sus misiones.
+ * Representa al piloto responsable de operar un dron.
  */
 public class Piloto {
 
-    private int idPiloto;
+    private String id;
     private String nombre;
-    private int experiencia;
+    private String licencia;
     private String telefono;
 
     public Piloto() {
     }
 
-    public Piloto(int idPiloto, String nombre, int experiencia, String telefono) {
-        this.idPiloto = idPiloto;
+    public Piloto(String id, String nombre, String licencia, String telefono) {
+        this.id = id;
         this.nombre = nombre;
-        this.experiencia = experiencia;
+        this.licencia = licencia;
         this.telefono = telefono;
     }
 
-    public int getIdPiloto() {
-        return idPiloto;
+    public String getId() {
+        return id;
     }
 
-    public void setIdPiloto(int idPiloto) {
-        this.idPiloto = idPiloto;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getNombre() {
@@ -36,12 +36,12 @@ public class Piloto {
         this.nombre = nombre;
     }
 
-    public int getExperiencia() {
-        return experiencia;
+    public String getLicencia() {
+        return licencia;
     }
 
-    public void setExperiencia(int experiencia) {
-        this.experiencia = experiencia;
+    public void setLicencia(String licencia) {
+        this.licencia = licencia;
     }
 
     public String getTelefono() {
@@ -55,9 +55,9 @@ public class Piloto {
     @Override
     public String toString() {
         return "Piloto{" +
-                "idPiloto=" + idPiloto +
+                "id='" + id + '\'' +
                 ", nombre='" + nombre + '\'' +
-                ", experiencia=" + experiencia +
+                ", licencia='" + licencia + '\'' +
                 ", telefono='" + telefono + '\'' +
                 '}';
     }

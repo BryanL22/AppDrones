@@ -5,39 +5,40 @@ import java.util.List;
 
 /**
  * Representa un dron administrado por la aplicacion, junto con el piloto
- * que lo opera y los sensores y misiones asociados a el.
+ * que lo opera y los sensores instalados en el.
+ *
+ * <p>Es la superclase de los tipos especializados de dron
+ * ({@link co.edu.poli.sw2.model.Agricultura} y {@link co.edu.poli.sw2.model.Vigilancia}).</p>
  */
 public class Drone {
 
-    private int idDrone;
+    private String id;
     private String serial;
     private String modelo;
     private String fabricante;
     private double peso;
     private Piloto piloto;
     private List<Sensor> sensores;
-    private List<Mision> misiones;
 
     public Drone() {
         this.sensores = new ArrayList<>();
-        this.misiones = new ArrayList<>();
     }
 
-    public Drone(int idDrone, String serial, String modelo, String fabricante, double peso) {
+    public Drone(String id, String serial, String modelo, String fabricante, double peso) {
         this();
-        this.idDrone = idDrone;
+        this.id = id;
         this.serial = serial;
         this.modelo = modelo;
         this.fabricante = fabricante;
         this.peso = peso;
     }
 
-    public int getIdDrone() {
-        return idDrone;
+    public String getId() {
+        return id;
     }
 
-    public void setIdDrone(int idDrone) {
-        this.idDrone = idDrone;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getSerial() {
@@ -88,25 +89,16 @@ public class Drone {
         this.sensores = sensores;
     }
 
-    public List<Mision> getMisiones() {
-        return misiones;
-    }
-
-    public void setMisiones(List<Mision> misiones) {
-        this.misiones = misiones;
-    }
-
     @Override
     public String toString() {
         return "Drone{" +
-                "idDrone=" + idDrone +
+                "id='" + id + '\'' +
                 ", serial='" + serial + '\'' +
                 ", modelo='" + modelo + '\'' +
                 ", fabricante='" + fabricante + '\'' +
                 ", peso=" + peso +
                 ", piloto=" + piloto +
                 ", sensores=" + sensores +
-                ", misiones=" + misiones +
                 '}';
     }
 }
