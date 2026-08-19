@@ -1,5 +1,7 @@
 package co.edu.poli.sw2;
 
+import co.edu.poli.sw2.services.Conexion;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -21,6 +23,11 @@ public class Main extends Application {
         stage.setTitle("Gestion de Drones");
         stage.setScene(new Scene(root));
         stage.show();
+    }
+
+    @Override
+    public void stop() {
+        Conexion.obtenerInstancia().cerrar();
     }
 
     public static void main(String[] args) {

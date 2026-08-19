@@ -1,4 +1,4 @@
-package co.edu.poli.sw2.database;
+package co.edu.poli.sw2.services;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,20 +11,29 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Encargada de administrar la conexion JDBC hacia la base de datos MySQL.
+ * Servicio Singleton encargado de administrar la conexion JDBC hacia la
+ * base de datos MySQL.
  *
- * <p>Las credenciales nunca se dejan escritas en el codigo fuente. Se
- * resuelven en este orden de prioridad:</p>
+ * <p>Al ser Singleton, existe una unica instancia de este servicio (y una
+ * unica {@link Connection} JDBC) para toda la aplicacion: se obtiene con
+ * {@link #obtenerInstancia()}, nunca con {@code new Conexion()} (el
+ * constructor es privado). {@link #getConnection()} reutiliza la conexion
+ * ya abierta mientras siga viva, y solo crea una nueva si nunca se abrio o
+ * si la anterior se cerro.</p>
+ *
+ * <p>La URL, el usuario y la contrasena nunca se dejan escritos en el
+ * codigo fuente: no hay ningun valor por defecto. Se resuelven en este
+ * orden de prioridad:</p>
  * <ol>
  *     <li>Variables de entorno del sistema operativo ({@code DB_URL},
  *     {@code DB_USER}, {@code DB_PASSWORD}).</li>
  *     <li>Archivo {@code .env} en la raiz del proyecto (ver
  *     {@code .env.example}), pensado solo para desarrollo local.</li>
- *     <li>Valores por defecto de desarrollo si ninguna de las anteriores
- *     esta definida.</li>
  * </ol>
- * <p>El archivo {@code .env} nunca debe subirse al repositorio: esta
- * excluido mediante {@code .gitignore}.</p>
+ * <p>Si una variable no esta definida en ninguno de los dos origenes, la
+ * clase falla al cargarse con un mensaje claro en vez de usar un valor
+ * inventado. El archivo {@code .env} nunca debe subirse al repositorio:
+ * esta excluido mediante {@code .gitignore}.</p>
  */
 public class Conexion {
 
@@ -32,18 +41,49 @@ public class Conexion {
 
     private static final Map<String, String> VARIABLES_ENV = cargarArchivoEnv();
 
-    private static final String URL = obtenerVariable("DB_URL",
-            "jdbc:mysql://localhost:3306/appdrones?useSSL=false&serverTimezone=UTC");
-    private static final String USUARIO = obtenerVariable("DB_USER", "root");
-    private static final String PASSWORD = obtenerVariable("DB_PASSWORD", "");
+    private static final String URL = obtenerVariable("DB_URL");
+    private static final String USUARIO = obtenerVariable("DB_USER");
+    private static final String PASSWORD = obtenerVariable("DB_PASSWORD");
+
+    private static Conexion instancia;
 
     private Connection connection;
 
+    private Conexion() {
+    }
+
+    /**
+     * Punto de acceso unico al servicio de conexion (patron Singleton).
+     * Crea la unica instancia la primera vez que se invoca; en llamadas
+     * posteriores devuelve siempre esa misma instancia.
+     *
+     * @return la unica instancia de {@link Conexion} de la aplicacion.
+     */
+    public static synchronized Conexion obtenerInstancia() {
+        if (instancia == null) {
+            instancia = new Conexion();
+        }
+        return instancia;
+    }
+
+    /**
+     * Devuelve la conexion JDBC activa, reutilizandola si ya estaba abierta.
+     *
+     * @return una {@link Connection} abierta hacia la base de datos.
+     * @throws SQLException si no fue posible abrir la conexion.
+     */
     public Connection getConnection() throws SQLException {
-        connection = DriverManager.getConnection(URL, USUARIO, PASSWORD);
+        if (connection == null || connection.isClosed()) {
+            connection = DriverManager.getConnection(URL, USUARIO, PASSWORD);
+        }
         return connection;
     }
 
+    /**
+     * Cierra la conexion compartida, si esta abierta. Debe llamarse al
+     * finalizar la aplicacion (no despues de cada operacion), ya que la
+     * misma conexion se reutiliza durante toda la ejecucion.
+     */
     public void cerrar() {
         try {
             if (connection != null && !connection.isClosed()) {
@@ -55,20 +95,26 @@ public class Conexion {
     }
 
     /**
-     * Resuelve el valor de una variable de configuracion, dando prioridad a
-     * las variables de entorno del sistema operativo y usando el archivo
-     * {@code .env} (o un valor por defecto) como respaldo.
+     * Resuelve el valor de una variable de configuracion obligatoria, dando
+     * prioridad a las variables de entorno del sistema operativo y usando
+     * el archivo {@code .env} como respaldo.
      *
      * @param clave nombre de la variable (p. ej. {@code DB_USER}).
-     * @param porDefecto valor a usar si la variable no esta definida en ningun origen.
      * @return el valor resuelto para la variable.
+     * @throws IllegalStateException si la variable no esta definida en ningun origen.
      */
-    private static String obtenerVariable(String clave, String porDefecto) {
+    private static String obtenerVariable(String clave) {
         String valor = System.getenv(clave);
-        if (valor == null || valor.isBlank()) {
+        if (valor == null) {
             valor = VARIABLES_ENV.get(clave);
         }
-        return (valor == null || valor.isBlank()) ? porDefecto : valor;
+
+        if (valor == null) {
+            throw new IllegalStateException("Falta la variable '" + clave + "'. Definela como variable de "
+                    + "entorno o agregala al archivo .env en la raiz del proyecto (ver .env.example).");
+        }
+
+        return valor;
     }
 
     /**
