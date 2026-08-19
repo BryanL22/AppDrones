@@ -7,7 +7,7 @@
  * campos propios en su propia tabla ({@code agricultura} / {@code vigilancia})
  * relacionada con {@code drone} mediante {@code id_drone}.
  *
- * <p>Todas usan JDBC, a traves de {@link co.edu.poli.sw2.database.Conexion},
+ * <p>Todas usan JDBC, a traves de {@link co.edu.poli.sw2.services.Conexion},
  * para almacenar y recuperar las entidades del paquete
  * {@link co.edu.poli.sw2.model}.</p>
  *

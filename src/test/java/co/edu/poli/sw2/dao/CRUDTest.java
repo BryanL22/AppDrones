@@ -1,8 +1,9 @@
 package co.edu.poli.sw2.dao;
 
-import co.edu.poli.sw2.database.Conexion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+
+import co.edu.poli.sw2.services.Conexion;
 
 import java.sql.Connection;
 import java.sql.SQLException;

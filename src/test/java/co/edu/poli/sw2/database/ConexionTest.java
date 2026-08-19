@@ -2,6 +2,8 @@ package co.edu.poli.sw2.database;
 
 import org.junit.jupiter.api.Test;
 
+import co.edu.poli.sw2.services.Conexion;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;

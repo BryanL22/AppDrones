@@ -1,4 +1,4 @@
-package co.edu.poli.sw2.database;
+package co.edu.poli.sw2.services;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +11,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Encargada de administrar la conexion JDBC hacia la base de datos MySQL.
+ * Servicio Singleton encargado de administrar la conexion JDBC hacia la
+ * base de datos MySQL.
+ *
+ * <p>Al ser Singleton, existe una unica instancia de este servicio (y una
+ * unica {@link Connection} JDBC) para toda la aplicacion: se obtiene con
+ * {@link #obtenerInstancia()}, nunca con {@code new Conexion()} (el
+ * constructor es privado). {@link #getConnection()} reutiliza la conexion
+ * ya abierta mientras siga viva, y solo crea una nueva si nunca se abrio o
+ * si la anterior se cerro.</p>
  *
  * <p>Las credenciales nunca se dejan escritas en el codigo fuente. Se
  * resuelven en este orden de prioridad:</p>
@@ -37,13 +45,45 @@ public class Conexion {
     private static final String USUARIO = obtenerVariable("DB_USER", "root");
     private static final String PASSWORD = obtenerVariable("DB_PASSWORD", "");
 
+    private static Conexion instancia;
+
     private Connection connection;
 
+    private Conexion() {
+    }
+
+    /**
+     * Punto de acceso unico al servicio de conexion (patron Singleton).
+     * Crea la unica instancia la primera vez que se invoca; en llamadas
+     * posteriores devuelve siempre esa misma instancia.
+     *
+     * @return la unica instancia de {@link Conexion} de la aplicacion.
+     */
+    public static synchronized Conexion obtenerInstancia() {
+        if (instancia == null) {
+            instancia = new Conexion();
+        }
+        return instancia;
+    }
+
+    /**
+     * Devuelve la conexion JDBC activa, reutilizandola si ya estaba abierta.
+     *
+     * @return una {@link Connection} abierta hacia la base de datos.
+     * @throws SQLException si no fue posible abrir la conexion.
+     */
     public Connection getConnection() throws SQLException {
-        connection = DriverManager.getConnection(URL, USUARIO, PASSWORD);
+        if (connection == null || connection.isClosed()) {
+            connection = DriverManager.getConnection(URL, USUARIO, PASSWORD);
+        }
         return connection;
     }
 
+    /**
+     * Cierra la conexion compartida, si esta abierta. Debe llamarse al
+     * finalizar la aplicacion (no despues de cada operacion), ya que la
+     * misma conexion se reutiliza durante toda la ejecucion.
+     */
     public void cerrar() {
         try {
             if (connection != null && !connection.isClosed()) {
