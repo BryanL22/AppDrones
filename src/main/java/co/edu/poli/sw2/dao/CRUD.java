@@ -34,7 +34,7 @@ public interface CRUD<T> {
      * @param id identificador de la entidad.
      * @return la entidad encontrada, o {@code null} si no existe.
      */
-    T obtenerPorId(int id);
+    T obtenerPorId(String id);
 
     /**
      * Actualiza los datos de una entidad existente.
@@ -50,7 +50,7 @@ public interface CRUD<T> {
      * @param id identificador de la entidad a eliminar.
      * @return {@code true} si la eliminacion se realizo correctamente.
      */
-    boolean eliminar(int id);
+    boolean eliminar(String id);
 
     /**
      * Crea la tabla de la entidad en la base de datos si todavia no existe.

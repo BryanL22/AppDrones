@@ -1,6 +1,8 @@
 package co.edu.poli.sw2.dao;
 
+import co.edu.poli.sw2.model.Agricultura;
 import co.edu.poli.sw2.model.Drone;
+import co.edu.poli.sw2.model.Vigilancia;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -10,6 +12,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,13 +20,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Pruebas de integracion para {@link DroneDAO}. Se ejecutan contra la base
  * de datos configurada en {@code .env}; cada prueba crea sus propios
- * registros identificados con un serial unico y los elimina al finalizar
- * para no dejar datos residuales.
+ * registros y los elimina al finalizar para no dejar datos residuales.
+ *
+ * <p>Cubre tanto los drones sin especializacion como los creados como
+ * {@link Agricultura} o {@link Vigilancia}, ya que un unico {@link DroneDAO}
+ * maneja los tres casos.</p>
  */
 class DroneDAOTest {
 
     private final DroneDAO droneDAO = new DroneDAO();
-    private Integer idCreado;
+    private String idCreado;
 
     @AfterEach
     void eliminarDroneDePrueba() {
@@ -34,32 +40,23 @@ class DroneDAOTest {
     }
 
     private Drone crearDronePrueba() {
+        String idUnico = "TEST-" + UUID.randomUUID();
         String serialUnico = "TEST-" + UUID.randomUUID();
-        Drone drone = new Drone(0, serialUnico, "ModeloTest", "FabricanteTest", 4.2);
+        Drone drone = new Drone(idUnico, serialUnico, "ModeloTest", "FabricanteTest", 4.2);
 
         assertTrue(droneDAO.crear(drone));
 
-        idCreado = buscarIdPorSerial(serialUnico);
-        assertNotNull(idCreado, "El drone de prueba deberia quedar visible en obtenerTodos()");
-
+        idCreado = idUnico;
         return droneDAO.obtenerPorId(idCreado);
     }
 
-    private Integer buscarIdPorSerial(String serial) {
-        return droneDAO.obtenerTodos().stream()
-                .filter(d -> serial.equals(d.getSerial()))
-                .map(Drone::getIdDrone)
-                .findFirst()
-                .orElse(null);
-    }
-
     @Test
-    void crearInsertaUnDroneRecuperablePorObtenerTodos() {
+    void crearUsaElIdAsignadoManualmenteYQuedaRecuperablePorObtenerTodos() {
         Drone creado = crearDronePrueba();
 
         List<Drone> todos = droneDAO.obtenerTodos();
         Optional<Drone> encontrado = todos.stream()
-                .filter(d -> d.getIdDrone() == creado.getIdDrone())
+                .filter(d -> d.getId().equals(creado.getId()))
                 .findFirst();
 
         assertTrue(encontrado.isPresent());
@@ -67,10 +64,19 @@ class DroneDAOTest {
     }
 
     @Test
+    void crearFallaSiElIdYaExiste() {
+        Drone creado = crearDronePrueba();
+
+        Drone duplicado = new Drone(creado.getId(), "OTRO-SERIAL", "OtroModelo", "OtroFabricante", 1.0);
+
+        assertFalse(droneDAO.crear(duplicado));
+    }
+
+    @Test
     void obtenerPorIdDevuelveElDroneCorrespondiente() {
         Drone creado = crearDronePrueba();
 
-        Drone encontrado = droneDAO.obtenerPorId(creado.getIdDrone());
+        Drone encontrado = droneDAO.obtenerPorId(creado.getId());
 
         assertNotNull(encontrado);
         assertEquals(creado.getSerial(), encontrado.getSerial());
@@ -81,7 +87,7 @@ class DroneDAOTest {
 
     @Test
     void obtenerPorIdDevuelveNuloSiElDroneNoExiste() {
-        assertNull(droneDAO.obtenerPorId(-1));
+        assertNull(droneDAO.obtenerPorId("id-inexistente"));
     }
 
     @Test
@@ -94,7 +100,7 @@ class DroneDAOTest {
 
         assertTrue(droneDAO.actualizar(creado));
 
-        Drone actualizado = droneDAO.obtenerPorId(creado.getIdDrone());
+        Drone actualizado = droneDAO.obtenerPorId(creado.getId());
         assertEquals("ModeloActualizado", actualizado.getModelo());
         assertEquals("FabricanteActualizado", actualizado.getFabricante());
         assertEquals(9.9, actualizado.getPeso());
@@ -102,7 +108,7 @@ class DroneDAOTest {
 
     @Test
     void actualizarDevuelveFalsoSiElDroneNoExiste() {
-        Drone inexistente = new Drone(-1, "NO-EXISTE", "X", "Y", 1.0);
+        Drone inexistente = new Drone("id-inexistente", "NO-EXISTE", "X", "Y", 1.0);
 
         assertFalse(droneDAO.actualizar(inexistente));
     }
@@ -111,14 +117,66 @@ class DroneDAOTest {
     void eliminarQuitaElDroneDeLaBaseDeDatos() {
         Drone creado = crearDronePrueba();
 
-        assertTrue(droneDAO.eliminar(creado.getIdDrone()));
-        assertNull(droneDAO.obtenerPorId(creado.getIdDrone()));
+        assertTrue(droneDAO.eliminar(creado.getId()));
+        assertNull(droneDAO.obtenerPorId(creado.getId()));
 
         idCreado = null;
     }
 
     @Test
     void eliminarDevuelveFalsoSiElDroneNoExiste() {
-        assertFalse(droneDAO.eliminar(-1));
+        assertFalse(droneDAO.eliminar("id-inexistente"));
+    }
+
+    @Test
+    void crearAgriculturaInsertaEnDroneYEnAgricultura() {
+        String idUnico = "TEST-AGRO-" + UUID.randomUUID();
+        Agricultura agricultura = new Agricultura(idUnico, "SER-AGRO", "ModeloAgro", "FabricanteAgro", 6.0, 20.0);
+
+        assertTrue(droneDAO.crear(agricultura));
+        idCreado = idUnico;
+
+        Drone encontrado = droneDAO.obtenerPorId(idUnico);
+        Agricultura encontradaAgricultura = assertInstanceOf(Agricultura.class, encontrado);
+        assertEquals("SER-AGRO", encontradaAgricultura.getSerial());
+        assertEquals(20.0, encontradaAgricultura.getCapacidadTanque());
+    }
+
+    @Test
+    void crearVigilanciaInsertaEnDroneYEnVigilancia() {
+        String idUnico = "TEST-VIG-" + UUID.randomUUID();
+        Vigilancia vigilancia = new Vigilancia(idUnico, "SER-VIG", "ModeloVig", "FabricanteVig", 3.0, true);
+
+        assertTrue(droneDAO.crear(vigilancia));
+        idCreado = idUnico;
+
+        Drone encontrado = droneDAO.obtenerPorId(idUnico);
+        Vigilancia encontradaVigilancia = assertInstanceOf(Vigilancia.class, encontrado);
+        assertEquals("SER-VIG", encontradaVigilancia.getSerial());
+        assertTrue(encontradaVigilancia.isDeteccionTermica());
+    }
+
+    @Test
+    void actualizarAgriculturaModificaCamposBaseYPropios() {
+        String idUnico = "TEST-AGRO-" + UUID.randomUUID();
+        droneDAO.crear(new Agricultura(idUnico, "SER-AGRO", "ModeloAgro", "FabricanteAgro", 6.0, 20.0));
+        idCreado = idUnico;
+
+        Agricultura actualizacion = new Agricultura(idUnico, "SER-AGRO", "ModeloAgroNuevo", "FabricanteAgro", 6.0, 35.5);
+        assertTrue(droneDAO.actualizar(actualizacion));
+
+        Agricultura actualizada = assertInstanceOf(Agricultura.class, droneDAO.obtenerPorId(idUnico));
+        assertEquals("ModeloAgroNuevo", actualizada.getModelo());
+        assertEquals(35.5, actualizada.getCapacidadTanque());
+    }
+
+    @Test
+    void eliminarUnaAgriculturaBorraLaFilaDeAgriculturaEnCascada() {
+        String idUnico = "TEST-AGRO-" + UUID.randomUUID();
+        droneDAO.crear(new Agricultura(idUnico, "SER-AGRO", "ModeloAgro", "FabricanteAgro", 6.0, 20.0));
+
+        assertTrue(droneDAO.eliminar(idUnico));
+
+        assertNull(droneDAO.obtenerPorId(idUnico));
     }
 }

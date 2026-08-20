@@ -10,21 +10,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DroneTest {
 
     @Test
-    void constructorVacioInicializaListasYPilotoEnNulo() {
+    void constructorVacioInicializaSensoresYPilotoEnNulo() {
         Drone drone = new Drone();
 
         assertNull(drone.getPiloto());
         assertNotNull(drone.getSensores());
         assertTrue(drone.getSensores().isEmpty());
-        assertNotNull(drone.getMisiones());
-        assertTrue(drone.getMisiones().isEmpty());
     }
 
     @Test
     void constructorConDatosAsignaTodosLosCampos() {
-        Drone drone = new Drone(1, "SER-001", "ModeloX", "FabricanteX", 2.5);
+        Drone drone = new Drone("D1", "SER-001", "ModeloX", "FabricanteX", 2.5);
 
-        assertEquals(1, drone.getIdDrone());
+        assertEquals("D1", drone.getId());
         assertEquals("SER-001", drone.getSerial());
         assertEquals("ModeloX", drone.getModelo());
         assertEquals("FabricanteX", drone.getFabricante());
@@ -34,7 +32,7 @@ class DroneTest {
     @Test
     void unDroneTieneUnSoloPilotoAsociado() {
         Drone drone = new Drone();
-        Piloto piloto = new Piloto(1, "Juan Perez", 5, "3000000000");
+        Piloto piloto = new Piloto("P1", "Juan Perez", "LIC-001", "3000000000");
 
         drone.setPiloto(piloto);
 
@@ -44,8 +42,8 @@ class DroneTest {
     @Test
     void reemplazarElPilotoDescartaElAnterior() {
         Drone drone = new Drone();
-        Piloto primero = new Piloto(1, "Juan Perez", 5, "3000000000");
-        Piloto segundo = new Piloto(2, "Maria Lopez", 3, "3000000001");
+        Piloto primero = new Piloto("P1", "Juan Perez", "LIC-001", "3000000000");
+        Piloto segundo = new Piloto("P2", "Maria Lopez", "LIC-002", "3000000001");
 
         drone.setPiloto(primero);
         drone.setPiloto(segundo);
@@ -55,8 +53,8 @@ class DroneTest {
 
     @Test
     void toStringIncluyeElPiloto() {
-        Drone drone = new Drone(1, "SER-001", "ModeloX", "FabricanteX", 2.5);
-        drone.setPiloto(new Piloto(1, "Juan Perez", 5, "3000000000"));
+        Drone drone = new Drone("D1", "SER-001", "ModeloX", "FabricanteX", 2.5);
+        drone.setPiloto(new Piloto("P1", "Juan Perez", "LIC-001", "3000000000"));
 
         assertTrue(drone.toString().contains("Juan Perez"));
     }

@@ -9,9 +9,9 @@ class SensorTest {
 
     @Test
     void constructorConDatosAsignaTodosLosCampos() {
-        Sensor sensor = new Sensor(1, "Camara", "FabricanteX");
+        Sensor sensor = new Sensor("S1", "Camara", "FabricanteX");
 
-        assertEquals(1, sensor.getIdSensor());
+        assertEquals("S1", sensor.getId());
         assertEquals("Camara", sensor.getTipo());
         assertEquals("FabricanteX", sensor.getFabricante());
     }
@@ -20,18 +20,18 @@ class SensorTest {
     void lasPropiedadesSonModificablesMedianteSetters() {
         Sensor sensor = new Sensor();
 
-        sensor.setIdSensor(2);
+        sensor.setId("S2");
         sensor.setTipo("GPS");
         sensor.setFabricante("FabricanteY");
 
-        assertEquals(2, sensor.getIdSensor());
+        assertEquals("S2", sensor.getId());
         assertEquals("GPS", sensor.getTipo());
         assertEquals("FabricanteY", sensor.getFabricante());
     }
 
     @Test
     void toStringIncluyeElTipo() {
-        Sensor sensor = new Sensor(1, "Camara", "FabricanteX");
+        Sensor sensor = new Sensor("S1", "Camara", "FabricanteX");
 
         assertTrue(sensor.toString().contains("Camara"));
     }

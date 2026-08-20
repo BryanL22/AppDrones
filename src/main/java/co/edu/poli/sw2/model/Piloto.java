@@ -1,53 +1,104 @@
 package co.edu.poli.sw2.model;
 
 /**
- * Representa al piloto responsable de operar un dron y sus misiones.
+ * Representa al piloto responsable de operar un dron.
  */
 public class Piloto {
 
-    private int idPiloto;
+    private String id;
     private String nombre;
-    private int experiencia;
+    private String licencia;
     private String telefono;
 
+    /**
+     * Crea un piloto sin datos.
+     */
     public Piloto() {
     }
 
-    public Piloto(int idPiloto, String nombre, int experiencia, String telefono) {
-        this.idPiloto = idPiloto;
+    /**
+     * Crea un piloto con sus datos basicos.
+     *
+     * @param id identificador unico del piloto.
+     * @param nombre nombre completo del piloto.
+     * @param licencia numero de licencia del piloto.
+     * @param telefono telefono de contacto del piloto.
+     */
+    public Piloto(String id, String nombre, String licencia, String telefono) {
+        this.id = id;
         this.nombre = nombre;
-        this.experiencia = experiencia;
+        this.licencia = licencia;
         this.telefono = telefono;
     }
 
-    public int getIdPiloto() {
-        return idPiloto;
+    /**
+     * Devuelve el identificador del piloto.
+     *
+     * @return el identificador del piloto.
+     */
+    public String getId() {
+        return id;
     }
 
-    public void setIdPiloto(int idPiloto) {
-        this.idPiloto = idPiloto;
+    /**
+     * Asigna el identificador del piloto.
+     *
+     * @param id identificador a asignar al piloto.
+     */
+    public void setId(String id) {
+        this.id = id;
     }
 
+    /**
+     * Devuelve el nombre completo del piloto.
+     *
+     * @return el nombre completo del piloto.
+     */
     public String getNombre() {
         return nombre;
     }
 
+    /**
+     * Asigna el nombre del piloto.
+     *
+     * @param nombre nombre a asignar al piloto.
+     */
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
-    public int getExperiencia() {
-        return experiencia;
+    /**
+     * Devuelve el numero de licencia del piloto.
+     *
+     * @return el numero de licencia del piloto.
+     */
+    public String getLicencia() {
+        return licencia;
     }
 
-    public void setExperiencia(int experiencia) {
-        this.experiencia = experiencia;
+    /**
+     * Asigna el numero de licencia del piloto.
+     *
+     * @param licencia numero de licencia a asignar al piloto.
+     */
+    public void setLicencia(String licencia) {
+        this.licencia = licencia;
     }
 
+    /**
+     * Devuelve el telefono de contacto del piloto.
+     *
+     * @return el telefono de contacto del piloto.
+     */
     public String getTelefono() {
         return telefono;
     }
 
+    /**
+     * Asigna el telefono de contacto del piloto.
+     *
+     * @param telefono telefono a asignar al piloto.
+     */
     public void setTelefono(String telefono) {
         this.telefono = telefono;
     }
@@ -55,9 +106,9 @@ public class Piloto {
     @Override
     public String toString() {
         return "Piloto{" +
-                "idPiloto=" + idPiloto +
+                "id='" + id + '\'' +
                 ", nombre='" + nombre + '\'' +
-                ", experiencia=" + experiencia +
+                ", licencia='" + licencia + '\'' +
                 ", telefono='" + telefono + '\'' +
                 '}';
     }

@@ -9,11 +9,11 @@ class PilotoTest {
 
     @Test
     void constructorConDatosAsignaTodosLosCampos() {
-        Piloto piloto = new Piloto(1, "Juan Perez", 5, "3000000000");
+        Piloto piloto = new Piloto("P1", "Juan Perez", "LIC-001", "3000000000");
 
-        assertEquals(1, piloto.getIdPiloto());
+        assertEquals("P1", piloto.getId());
         assertEquals("Juan Perez", piloto.getNombre());
-        assertEquals(5, piloto.getExperiencia());
+        assertEquals("LIC-001", piloto.getLicencia());
         assertEquals("3000000000", piloto.getTelefono());
     }
 
@@ -21,20 +21,20 @@ class PilotoTest {
     void lasPropiedadesSonModificablesMedianteSetters() {
         Piloto piloto = new Piloto();
 
-        piloto.setIdPiloto(2);
+        piloto.setId("P2");
         piloto.setNombre("Maria Lopez");
-        piloto.setExperiencia(3);
+        piloto.setLicencia("LIC-002");
         piloto.setTelefono("3000000001");
 
-        assertEquals(2, piloto.getIdPiloto());
+        assertEquals("P2", piloto.getId());
         assertEquals("Maria Lopez", piloto.getNombre());
-        assertEquals(3, piloto.getExperiencia());
+        assertEquals("LIC-002", piloto.getLicencia());
         assertEquals("3000000001", piloto.getTelefono());
     }
 
     @Test
     void toStringIncluyeElNombre() {
-        Piloto piloto = new Piloto(1, "Juan Perez", 5, "3000000000");
+        Piloto piloto = new Piloto("P1", "Juan Perez", "LIC-001", "3000000000");
 
         assertTrue(piloto.toString().contains("Juan Perez"));
     }
