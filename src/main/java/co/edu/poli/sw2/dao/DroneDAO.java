@@ -59,6 +59,13 @@ public class DroneDAO implements CRUD<Drone> {
                     "LEFT JOIN vigilancia v ON d.id = v.id_drone";
 
     /**
+     * Crea el DAO. No recibe dependencias: la conexion se obtiene del
+     * servicio Singleton {@link Conexion} en cada operacion.
+     */
+    public DroneDAO() {
+    }
+
+    /**
      * Obtiene la conexion compartida (Singleton) y garantiza que las tres
      * tablas existan. La conexion no se cierra aqui: la administra
      * {@link Conexion} durante toda la vida de la aplicacion.

@@ -73,14 +73,15 @@
         <Button text="Eliminar" prefWidth="150" styleClass="crud-button" onAction="#onEliminar"/>
     </HBox>
 
-    <TableView fx:id="tablaDrones" prefHeight="220" prefWidth="660">
+    <TableView fx:id="tablaDrones" prefHeight="220" prefWidth="760">
         <columns>
             <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
-            <TableColumn fx:id="colSerial" text="Serial" prefWidth="120"/>
-            <TableColumn fx:id="colModelo" text="Modelo" prefWidth="110"/>
-            <TableColumn fx:id="colFabricante" text="Fabricante" prefWidth="120"/>
-            <TableColumn fx:id="colPeso" text="Peso (kg)" prefWidth="80"/>
-            <TableColumn fx:id="colTipo" text="Tipo" prefWidth="100"/>
+            <TableColumn fx:id="colSerial" text="Serial" prefWidth="110"/>
+            <TableColumn fx:id="colModelo" text="Modelo" prefWidth="100"/>
+            <TableColumn fx:id="colFabricante" text="Fabricante" prefWidth="110"/>
+            <TableColumn fx:id="colPeso" text="Peso (kg)" prefWidth="75"/>
+            <TableColumn fx:id="colCapacidadTanque" text="Capacidad tanque (L)" prefWidth="150"/>
+            <TableColumn fx:id="colDeteccionTermica" text="Deteccion termica" prefWidth="130"/>
         </columns>
     </TableView>
 
