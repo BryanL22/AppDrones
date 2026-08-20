@@ -1,4 +1,4 @@
-package co.edu.poli.sw2.database;
+package co.edu.poli.sw2.services;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +11,8 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConexionTest {
@@ -55,13 +57,35 @@ class ConexionTest {
     }
 
     @Test
-    void getConnectionAbreUnaConexionValidaContraLaBaseConfigurada() throws SQLException {
-        Conexion conexion = new Conexion();
+    void obtenerInstanciaSiempreDevuelveLaMismaInstancia() {
+        Conexion primera = Conexion.obtenerInstancia();
+        Conexion segunda = Conexion.obtenerInstancia();
 
-        Connection connection = conexion.getConnection();
+        assertSame(primera, segunda);
+    }
 
-        assertFalse(connection.isClosed());
+    @Test
+    void getConnectionReutilizaLaMismaConexionMientrasSigaAbierta() throws SQLException {
+        Conexion conexion = Conexion.obtenerInstancia();
+
+        Connection primera = conexion.getConnection();
+        Connection segunda = conexion.getConnection();
+
+        assertSame(primera, segunda);
+        assertFalse(primera.isClosed());
+    }
+
+    @Test
+    void getConnectionAbreUnaNuevaConexionSiLaAnteriorFueCerrada() throws SQLException {
+        Conexion conexion = Conexion.obtenerInstancia();
+
+        Connection primera = conexion.getConnection();
         conexion.cerrar();
-        assertTrue(connection.isClosed());
+        assertTrue(primera.isClosed());
+
+        Connection segunda = conexion.getConnection();
+
+        assertNotSame(primera, segunda);
+        assertFalse(segunda.isClosed());
     }
 }

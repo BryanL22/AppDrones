@@ -1,8 +1,6 @@
 package co.edu.poli.sw2.controller;
 
-import co.edu.poli.sw2.dao.AgriculturaDAO;
 import co.edu.poli.sw2.dao.DroneDAO;
-import co.edu.poli.sw2.dao.VigilanciaDAO;
 import co.edu.poli.sw2.model.Agricultura;
 import co.edu.poli.sw2.model.Drone;
 import co.edu.poli.sw2.model.Vigilancia;
@@ -22,18 +20,13 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 /**
  * Controlador asociado a la vista principal (GestorDrones.fxml).
  *
  * <p>Siguiendo el patron MVC, esta clase solo lee/escribe los controles de
- * la vista y traduce las acciones del usuario en llamadas a {@link DroneDAO},
- * {@link AgriculturaDAO} y {@link VigilanciaDAO}. No contiene SQL ni logica
- * de acceso a datos: toda la persistencia vive en la capa de modelo
- * (paquetes {@code dao} y {@code database}).</p>
+ * la vista y traduce las acciones del usuario en llamadas a {@link DroneDAO}.
+ * No contiene SQL ni logica de acceso a datos: toda la persistencia vive en
+ * la capa de modelo (paquetes {@code dao} y {@code database}).</p>
  */
 public class MainController {
 
@@ -77,12 +70,7 @@ public class MainController {
     private TableColumn<Drone, String> colTipo;
 
     private final DroneDAO droneDAO = new DroneDAO();
-    private final AgriculturaDAO agriculturaDAO = new AgriculturaDAO();
-    private final VigilanciaDAO vigilanciaDAO = new VigilanciaDAO();
     private final ObservableList<Drone> drones = FXCollections.observableArrayList();
-
-    private Set<String> idsAgricultura = new HashSet<>();
-    private Set<String> idsVigilancia = new HashSet<>();
 
     @FXML
     private void initialize() {
@@ -91,7 +79,7 @@ public class MainController {
         colModelo.setCellValueFactory(new PropertyValueFactory<>("modelo"));
         colFabricante.setCellValueFactory(new PropertyValueFactory<>("fabricante"));
         colPeso.setCellValueFactory(new PropertyValueFactory<>("peso"));
-        colTipo.setCellValueFactory(datos -> new SimpleStringProperty(tipoDe(datos.getValue().getId())));
+        colTipo.setCellValueFactory(datos -> new SimpleStringProperty(tipoDe(datos.getValue())));
 
         cbTipo.setItems(FXCollections.observableArrayList(TIPO_AGRICULTURA, TIPO_VIGILANCIA));
         cbTipo.valueProperty().addListener((observable, anterior, nuevoTipo) -> mostrarCamposDeTipo(nuevoTipo));
@@ -139,19 +127,12 @@ public class MainController {
             return;
         }
 
-        boolean creado;
-        if (TIPO_AGRICULTURA.equals(tipo)) {
-            Double capacidadTanque = parsearCapacidadTanque();
-            if (capacidadTanque == null) {
-                return;
-            }
-            creado = agriculturaDAO.crear(new Agricultura(id, serial, modelo, fabricante, peso, capacidadTanque));
-        } else {
-            creado = vigilanciaDAO.crear(
-                    new Vigilancia(id, serial, modelo, fabricante, peso, chkDeteccionTermica.isSelected()));
+        Drone drone = construirDrone(tipo, id, serial, modelo, fabricante, peso);
+        if (drone == null) {
+            return;
         }
 
-        if (creado) {
+        if (droneDAO.crear(drone)) {
             limpiarFormulario();
             cargarDrones();
         } else {
@@ -209,19 +190,12 @@ public class MainController {
             return;
         }
 
-        boolean actualizado;
-        if (TIPO_AGRICULTURA.equals(tipo)) {
-            Double capacidadTanque = parsearCapacidadTanque();
-            if (capacidadTanque == null) {
-                return;
-            }
-            actualizado = agriculturaDAO.actualizar(new Agricultura(id, serial, modelo, fabricante, peso, capacidadTanque));
-        } else {
-            actualizado = vigilanciaDAO.actualizar(
-                    new Vigilancia(id, serial, modelo, fabricante, peso, chkDeteccionTermica.isSelected()));
+        Drone drone = construirDrone(tipo, id, serial, modelo, fabricante, peso);
+        if (drone == null) {
+            return;
         }
 
-        if (actualizado) {
+        if (droneDAO.actualizar(drone)) {
             limpiarFormulario();
             cargarDrones();
         } else {
@@ -245,30 +219,38 @@ public class MainController {
         }
     }
 
+    /**
+     * Construye la instancia concreta ({@link Agricultura} o {@link Vigilancia})
+     * segun el tipo elegido en {@link #cbTipo}, leyendo el campo propio de
+     * cada especializacion desde su control en la vista.
+     */
+    private Drone construirDrone(String tipo, String id, String serial, String modelo, String fabricante,
+                                  double peso) {
+        if (TIPO_AGRICULTURA.equals(tipo)) {
+            Double capacidadTanque = parsearCapacidadTanque();
+            if (capacidadTanque == null) {
+                return null;
+            }
+            return new Agricultura(id, serial, modelo, fabricante, peso, capacidadTanque);
+        }
+
+        return new Vigilancia(id, serial, modelo, fabricante, peso, chkDeteccionTermica.isSelected());
+    }
+
     private void cargarDrones() {
         drones.setAll(droneDAO.obtenerTodos());
-        idsAgricultura = agriculturaDAO.obtenerTodos().stream()
-                .map(Agricultura::getId)
-                .collect(Collectors.toSet());
-        idsVigilancia = vigilanciaDAO.obtenerTodos().stream()
-                .map(Vigilancia::getId)
-                .collect(Collectors.toSet());
-        tablaDrones.refresh();
     }
 
     /**
-     * Determina el tipo de especializacion de un dron a partir de las
-     * tablas {@code agricultura} y {@code vigilancia} cargadas en
-     * {@link #cargarDrones()}.
-     *
-     * @param id identificador del dron.
-     * @return {@code "Agricultura"}, {@code "Vigilancia"} o {@code "-"} si no tiene especializacion.
+     * Determina el tipo de especializacion de un dron mediante {@code instanceof},
+     * ya que {@link DroneDAO} devuelve instancias de {@link Agricultura} o
+     * {@link Vigilancia} cuando corresponde.
      */
-    private String tipoDe(String id) {
-        if (idsAgricultura.contains(id)) {
+    private String tipoDe(Drone drone) {
+        if (drone instanceof Agricultura) {
             return TIPO_AGRICULTURA;
         }
-        if (idsVigilancia.contains(id)) {
+        if (drone instanceof Vigilancia) {
             return TIPO_VIGILANCIA;
         }
         return "-";
@@ -296,15 +278,12 @@ public class MainController {
         txtFabricante.setText(drone.getFabricante());
         txtPeso.setText(String.valueOf(drone.getPeso()));
 
-        String tipo = tipoDe(drone.getId());
-        if (TIPO_AGRICULTURA.equals(tipo)) {
+        if (drone instanceof Agricultura agricultura) {
             cbTipo.setValue(TIPO_AGRICULTURA);
-            Agricultura agricultura = agriculturaDAO.obtenerPorId(drone.getId());
-            txtCapacidadTanque.setText(agricultura != null ? String.valueOf(agricultura.getCapacidadTanque()) : "");
-        } else if (TIPO_VIGILANCIA.equals(tipo)) {
+            txtCapacidadTanque.setText(String.valueOf(agricultura.getCapacidadTanque()));
+        } else if (drone instanceof Vigilancia vigilancia) {
             cbTipo.setValue(TIPO_VIGILANCIA);
-            Vigilancia vigilancia = vigilanciaDAO.obtenerPorId(drone.getId());
-            chkDeteccionTermica.setSelected(vigilancia != null && vigilancia.isDeteccionTermica());
+            chkDeteccionTermica.setSelected(vigilancia.isDeteccionTermica());
         } else {
             cbTipo.setValue(null);
         }

@@ -1,19 +1,26 @@
 /**
  * Contiene el contrato generico de persistencia {@link co.edu.poli.sw2.dao.CRUD}
- * y sus implementaciones: {@link co.edu.poli.sw2.dao.DroneDAO} para la tabla
- * base {@code drone}, y {@link co.edu.poli.sw2.dao.AgriculturaDAO} /
- * {@link co.edu.poli.sw2.dao.VigilanciaDAO} para las especializaciones del
- * dron, siguiendo un patron de herencia por tabla: cada una persiste sus
- * campos propios en su propia tabla ({@code agricultura} / {@code vigilancia})
- * relacionada con {@code drone} mediante {@code id_drone}.
+ * y su unica implementacion, {@link co.edu.poli.sw2.dao.DroneDAO}, que maneja
+ * tanto la entidad base {@link co.edu.poli.sw2.model.Drone} como sus
+ * especializaciones {@link co.edu.poli.sw2.model.Agricultura} y
+ * {@link co.edu.poli.sw2.model.Vigilancia}, decidiendo con {@code instanceof}
+ * que tabla adicional leer, escribir o actualizar segun el tipo real del
+ * objeto recibido.
  *
+<<<<<<< HEAD
  * <p>Todas usan JDBC, a traves de {@link co.edu.poli.sw2.services.Conexion},
+=======
+ * <p>Sigue un patron de herencia por tabla: los campos comunes se guardan en
+ * {@code drone} y los propios de cada especializacion en su propia tabla
+ * ({@code agricultura} / {@code vigilancia}), relacionada con {@code drone}
+ * mediante {@code id_drone} (con {@code ON DELETE CASCADE}). Usa JDBC, a
+ * traves del servicio Singleton {@link co.edu.poli.sw2.services.Conexion},
+>>>>>>> origin/bryan
  * para almacenar y recuperar las entidades del paquete
  * {@link co.edu.poli.sw2.model}.</p>
  *
- * <p>Cada implementacion de {@link co.edu.poli.sw2.dao.CRUD} es responsable de
- * definir la sentencia {@code CREATE TABLE IF NOT EXISTS} propia de su entidad
- * e invocar {@link co.edu.poli.sw2.dao.CRUD#crearTabla(java.sql.Connection, String)}
- * antes de operar sobre la tabla correspondiente.</p>
+ * <p>{@link co.edu.poli.sw2.dao.CRUD#crearTabla(java.sql.Connection, String)}
+ * es un metodo por defecto que cada tabla usa para asegurar su propio
+ * esquema antes de operar sobre ella.</p>
  */
 package co.edu.poli.sw2.dao;
