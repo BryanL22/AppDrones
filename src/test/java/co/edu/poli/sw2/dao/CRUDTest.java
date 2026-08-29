@@ -5,7 +5,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -29,7 +28,7 @@ class CRUDTest {
     private final DroneDAO crud = new DroneDAO();
 
     @AfterEach
-    void limpiarTablaDePrueba() throws SQLException {
+    void limpiarTablaDePrueba() throws Exception {
         Connection connection = Conexion.obtenerInstancia().getConnection();
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate("DROP TABLE IF EXISTS " + TABLA_PRUEBA);
@@ -37,7 +36,7 @@ class CRUDTest {
     }
 
     @Test
-    void crearTablaCreaLaTablaSiNoExiste() throws SQLException {
+    void crearTablaCreaLaTablaSiNoExiste() throws Exception {
         Connection connection = Conexion.obtenerInstancia().getConnection();
         crud.crearTabla(connection, SQL_CREAR);
 
@@ -45,7 +44,7 @@ class CRUDTest {
     }
 
     @Test
-    void crearTablaEsIdempotente() throws SQLException {
+    void crearTablaEsIdempotente() throws Exception {
         Connection connection = Conexion.obtenerInstancia().getConnection();
         crud.crearTabla(connection, SQL_CREAR);
 
@@ -53,7 +52,7 @@ class CRUDTest {
         assertTrue(existeTabla(connection));
     }
 
-    private boolean existeTabla(Connection connection) throws SQLException {
+    private boolean existeTabla(Connection connection) throws Exception {
         try (var resultSet = connection.getMetaData().getTables(null, null, TABLA_PRUEBA, null)) {
             return resultSet.next();
         }

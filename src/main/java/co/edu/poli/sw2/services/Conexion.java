@@ -39,17 +39,25 @@ public class Conexion {
 
     private static final String ENV_FILE = ".env";
 
-    private static final Map<String, String> VARIABLES_ENV = cargarArchivoEnv();
-
-    private static final String URL = obtenerVariable("DB_URL");
-    private static final String USUARIO = obtenerVariable("DB_USER");
-    private static final String PASSWORD = obtenerVariable("DB_PASSWORD");
-
     private static Conexion instancia;
+
+    private final String url;
+    private final String usuario;
+    private final String password;
 
     private Connection connection;
 
-    private Conexion() {
+    /**
+     * Carga la configuracion (variables de entorno y/o archivo {@code .env})
+     * necesaria para abrir la conexion JDBC.
+     *
+     * @throws IOException si el archivo {@code .env} existe pero no se pudo leer.
+     */
+    private Conexion() throws IOException {
+        Map<String, String> variablesEnv = cargarArchivoEnv();
+        this.url = obtenerVariable(variablesEnv, "DB_URL");
+        this.usuario = obtenerVariable(variablesEnv, "DB_USER");
+        this.password = obtenerVariable(variablesEnv, "DB_PASSWORD");
     }
 
     /**
@@ -58,8 +66,9 @@ public class Conexion {
      * posteriores devuelve siempre esa misma instancia.
      *
      * @return la unica instancia de {@link Conexion} de la aplicacion.
+     * @throws IOException si el archivo {@code .env} existe pero no se pudo leer.
      */
-    public static synchronized Conexion obtenerInstancia() {
+    public static synchronized Conexion obtenerInstancia() throws IOException {
         if (instancia == null) {
             instancia = new Conexion();
         }
@@ -74,7 +83,7 @@ public class Conexion {
      */
     public Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
-            connection = DriverManager.getConnection(URL, USUARIO, PASSWORD);
+            connection = DriverManager.getConnection(url, usuario, password);
         }
         return connection;
     }
@@ -83,14 +92,12 @@ public class Conexion {
      * Cierra la conexion compartida, si esta abierta. Debe llamarse al
      * finalizar la aplicacion (no despues de cada operacion), ya que la
      * misma conexion se reutiliza durante toda la ejecucion.
+     *
+     * @throws SQLException si ocurre un error al cerrar la conexion.
      */
-    public void cerrar() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public void cerrar() throws SQLException {
+        if (connection != null && !connection.isClosed()) {
+            connection.close();
         }
     }
 
@@ -99,14 +106,15 @@ public class Conexion {
      * prioridad a las variables de entorno del sistema operativo y usando
      * el archivo {@code .env} como respaldo.
      *
+     * @param variablesEnv variables leidas del archivo {@code .env}.
      * @param clave nombre de la variable (p. ej. {@code DB_USER}).
      * @return el valor resuelto para la variable.
      * @throws IllegalStateException si la variable no esta definida en ningun origen.
      */
-    private static String obtenerVariable(String clave) {
+    private static String obtenerVariable(Map<String, String> variablesEnv, String clave) {
         String valor = System.getenv(clave);
         if (valor == null) {
-            valor = VARIABLES_ENV.get(clave);
+            valor = variablesEnv.get(clave);
         }
 
         if (valor == null) {
@@ -124,20 +132,16 @@ public class Conexion {
      * inicien con {@code #}.
      *
      * @return mapa con las variables encontradas; vacio si el archivo no existe.
+     * @throws IOException si el archivo existe pero no se pudo leer.
      */
-    private static Map<String, String> cargarArchivoEnv() {
+    private static Map<String, String> cargarArchivoEnv() throws IOException {
         Path ruta = Path.of(ENV_FILE);
 
         if (!Files.exists(ruta)) {
             return new HashMap<>();
         }
 
-        try {
-            return parsearEnv(Files.readAllLines(ruta));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
+        return parsearEnv(Files.readAllLines(ruta));
     }
 
     /**

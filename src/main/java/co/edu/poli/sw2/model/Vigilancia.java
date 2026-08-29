@@ -48,6 +48,18 @@ public class Vigilancia extends Drone {
         this.deteccionTermica = deteccionTermica;
     }
 
+    /**
+     * Crea una copia de este dron de vigilancia (patron Prototype), incluyendo
+     * si tiene deteccion termica. El objeto devuelto tiene una identidad
+     * (referencia de memoria) distinta a la de {@code this}.
+     *
+     * @return una copia independiente de este dron de vigilancia.
+     */
+    @Override
+    public Vigilancia clone() {
+        return (Vigilancia) super.clone();
+    }
+
     @Override
     public String toString() {
         return "Vigilancia{" +

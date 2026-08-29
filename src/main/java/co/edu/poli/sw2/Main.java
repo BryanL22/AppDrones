@@ -26,7 +26,7 @@ public class Main extends Application {
     }
 
     @Override
-    public void stop() {
+    public void stop() throws Exception {
         Conexion.obtenerInstancia().cerrar();
     }
 

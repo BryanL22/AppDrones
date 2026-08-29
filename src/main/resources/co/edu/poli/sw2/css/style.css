@@ -26,3 +26,10 @@
 .button:pressed {
     -fx-background-color: #1d4ed8;
 }
+
+.identidad-label {
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 13px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #a1a1aa;
+}
