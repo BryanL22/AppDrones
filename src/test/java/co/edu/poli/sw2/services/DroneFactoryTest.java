@@ -10,7 +10,6 @@ class DroneFactoryTest {
     void tiposDisponiblesIncluyeAgriculturaYVigilancia() {
         assertEquals(
                 java.util.List.of(DroneFactory.TIPO_AGRICULTURA, DroneFactory.TIPO_VIGILANCIA),
-                DroneFactory.tiposDisponibles()
-        );
+                DroneFactory.tiposDisponibles());
     }
 }
