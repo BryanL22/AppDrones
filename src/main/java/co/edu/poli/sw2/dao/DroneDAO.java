@@ -5,6 +5,7 @@ import co.edu.poli.sw2.model.Drone;
 import co.edu.poli.sw2.model.Vigilancia;
 import co.edu.poli.sw2.services.Conexion;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -72,8 +73,9 @@ public class DroneDAO implements CRUD<Drone> {
      *
      * @return conexion JDBC lista para usar.
      * @throws SQLException si falla la conexion o la creacion de alguna tabla.
+     * @throws IOException si no se pudo leer la configuracion de conexion.
      */
-    private Connection obtenerConexion() throws SQLException {
+    private Connection obtenerConexion() throws SQLException, IOException {
         Connection connection = Conexion.obtenerInstancia().getConnection();
         crearTabla(connection, SQL_CREAR_TABLA_DRONE);
         crearTabla(connection, SQL_CREAR_TABLA_AGRICULTURA);
@@ -82,38 +84,33 @@ public class DroneDAO implements CRUD<Drone> {
     }
 
     @Override
-    public boolean crear(Drone obj) {
+    public boolean crear(Drone obj) throws SQLException, IOException {
         String sql = "INSERT INTO drone (id, `serial`, modelo, fabricante, peso) VALUES (?, ?, ?, ?, ?)";
 
+        Connection connection = obtenerConexion();
+        connection.setAutoCommit(false);
+
+        boolean exito = false;
         try {
-            Connection connection = obtenerConexion();
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, obj.getId());
+                statement.setString(2, obj.getSerial());
+                statement.setString(3, obj.getModelo());
+                statement.setString(4, obj.getFabricante());
+                statement.setDouble(5, obj.getPeso());
+                statement.executeUpdate();
 
-            try {
-                connection.setAutoCommit(false);
-
-                try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                    statement.setString(1, obj.getId());
-                    statement.setString(2, obj.getSerial());
-                    statement.setString(3, obj.getModelo());
-                    statement.setString(4, obj.getFabricante());
-                    statement.setDouble(5, obj.getPeso());
-                    statement.executeUpdate();
-
-                    insertarEspecializacion(connection, obj);
-
-                    connection.commit();
-                    return true;
-                } catch (SQLException e) {
-                    connection.rollback();
-                    e.printStackTrace();
-                    return false;
-                }
-            } finally {
-                connection.setAutoCommit(true);
+                insertarEspecializacion(connection, obj);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+
+            connection.commit();
+            exito = true;
+            return true;
+        } finally {
+            if (!exito) {
+                connection.rollback();
+            }
+            connection.setAutoCommit(true);
         }
     }
 
@@ -136,82 +133,70 @@ public class DroneDAO implements CRUD<Drone> {
     }
 
     @Override
-    public List<Drone> obtenerTodos() {
+    public List<Drone> obtenerTodos() throws SQLException, IOException {
         List<Drone> drones = new ArrayList<>();
 
-        try {
-            Connection connection = obtenerConexion();
+        Connection connection = obtenerConexion();
 
-            try (Statement statement = connection.createStatement();
-                 ResultSet resultSet = statement.executeQuery(SQL_SELECT_BASE)) {
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SQL_SELECT_BASE)) {
 
-                while (resultSet.next()) {
-                    drones.add(mapearDrone(resultSet));
-                }
+            while (resultSet.next()) {
+                drones.add(mapearDrone(resultSet));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
 
         return drones;
     }
 
     @Override
-    public Drone obtenerPorId(String id) {
+    public Drone obtenerPorId(String id) throws SQLException, IOException {
         String sql = SQL_SELECT_BASE + " WHERE d.id = ?";
 
-        try {
-            Connection connection = obtenerConexion();
+        Connection connection = obtenerConexion();
 
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, id);
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, id);
 
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        return mapearDrone(resultSet);
-                    }
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapearDrone(resultSet);
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
 
         return null;
     }
 
     @Override
-    public boolean actualizar(Drone obj) {
+    public boolean actualizar(Drone obj) throws SQLException, IOException {
         String sql = "UPDATE drone SET `serial` = ?, modelo = ?, fabricante = ?, peso = ? WHERE id = ?";
 
+        Connection connection = obtenerConexion();
+        connection.setAutoCommit(false);
+
+        boolean exito = false;
         try {
-            Connection connection = obtenerConexion();
-
-            try {
-                connection.setAutoCommit(false);
-
-                try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                    statement.setString(1, obj.getSerial());
-                    statement.setString(2, obj.getModelo());
-                    statement.setString(3, obj.getFabricante());
-                    statement.setDouble(4, obj.getPeso());
-                    statement.setString(5, obj.getId());
-                    int filasDrone = statement.executeUpdate();
-
-                    int filasEspecializacion = actualizarEspecializacion(connection, obj);
-
-                    connection.commit();
-                    return filasDrone > 0 && filasEspecializacion > 0;
-                } catch (SQLException e) {
-                    connection.rollback();
-                    e.printStackTrace();
-                    return false;
-                }
-            } finally {
-                connection.setAutoCommit(true);
+            int filasDrone;
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, obj.getSerial());
+                statement.setString(2, obj.getModelo());
+                statement.setString(3, obj.getFabricante());
+                statement.setDouble(4, obj.getPeso());
+                statement.setString(5, obj.getId());
+                filasDrone = statement.executeUpdate();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+
+            int filasEspecializacion = actualizarEspecializacion(connection, obj);
+
+            connection.commit();
+            exito = true;
+            return filasDrone > 0 && filasEspecializacion > 0;
+        } finally {
+            if (!exito) {
+                connection.rollback();
+            }
+            connection.setAutoCommit(true);
         }
     }
 
@@ -237,20 +222,15 @@ public class DroneDAO implements CRUD<Drone> {
     }
 
     @Override
-    public boolean eliminar(String id) {
+    public boolean eliminar(String id) throws SQLException, IOException {
         // Las filas de "agricultura"/"vigilancia" se eliminan en cascada (ON DELETE CASCADE).
         String sql = "DELETE FROM drone WHERE id = ?";
 
-        try {
-            Connection connection = obtenerConexion();
+        Connection connection = obtenerConexion();
 
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, id);
-                return statement.executeUpdate() > 0;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, id);
+            return statement.executeUpdate() > 0;
         }
     }
 

@@ -32,14 +32,14 @@ class DroneDAOTest {
     private String idCreado;
 
     @AfterEach
-    void eliminarDroneDePrueba() {
+    void eliminarDroneDePrueba() throws Exception {
         if (idCreado != null) {
             droneDAO.eliminar(idCreado);
             idCreado = null;
         }
     }
 
-    private Drone crearDronePrueba() {
+    private Drone crearDronePrueba() throws Exception {
         String idUnico = "TEST-" + UUID.randomUUID();
         String serialUnico = "TEST-" + UUID.randomUUID();
         Drone drone = new Drone(idUnico, serialUnico, "ModeloTest", "FabricanteTest", 4.2);
@@ -51,7 +51,7 @@ class DroneDAOTest {
     }
 
     @Test
-    void crearUsaElIdAsignadoManualmenteYQuedaRecuperablePorObtenerTodos() {
+    void crearUsaElIdAsignadoManualmenteYQuedaRecuperablePorObtenerTodos() throws Exception {
         Drone creado = crearDronePrueba();
 
         List<Drone> todos = droneDAO.obtenerTodos();
@@ -64,7 +64,7 @@ class DroneDAOTest {
     }
 
     @Test
-    void crearFallaSiElIdYaExiste() {
+    void crearFallaSiElIdYaExiste() throws Exception {
         Drone creado = crearDronePrueba();
 
         Drone duplicado = new Drone(creado.getId(), "OTRO-SERIAL", "OtroModelo", "OtroFabricante", 1.0);
@@ -73,7 +73,7 @@ class DroneDAOTest {
     }
 
     @Test
-    void obtenerPorIdDevuelveElDroneCorrespondiente() {
+    void obtenerPorIdDevuelveElDroneCorrespondiente() throws Exception {
         Drone creado = crearDronePrueba();
 
         Drone encontrado = droneDAO.obtenerPorId(creado.getId());
@@ -86,12 +86,12 @@ class DroneDAOTest {
     }
 
     @Test
-    void obtenerPorIdDevuelveNuloSiElDroneNoExiste() {
+    void obtenerPorIdDevuelveNuloSiElDroneNoExiste() throws Exception {
         assertNull(droneDAO.obtenerPorId("id-inexistente"));
     }
 
     @Test
-    void actualizarModificaLosDatosDelDroneExistente() {
+    void actualizarModificaLosDatosDelDroneExistente() throws Exception {
         Drone creado = crearDronePrueba();
 
         creado.setModelo("ModeloActualizado");
@@ -107,14 +107,14 @@ class DroneDAOTest {
     }
 
     @Test
-    void actualizarDevuelveFalsoSiElDroneNoExiste() {
+    void actualizarDevuelveFalsoSiElDroneNoExiste() throws Exception {
         Drone inexistente = new Drone("id-inexistente", "NO-EXISTE", "X", "Y", 1.0);
 
         assertFalse(droneDAO.actualizar(inexistente));
     }
 
     @Test
-    void eliminarQuitaElDroneDeLaBaseDeDatos() {
+    void eliminarQuitaElDroneDeLaBaseDeDatos() throws Exception {
         Drone creado = crearDronePrueba();
 
         assertTrue(droneDAO.eliminar(creado.getId()));
@@ -124,12 +124,12 @@ class DroneDAOTest {
     }
 
     @Test
-    void eliminarDevuelveFalsoSiElDroneNoExiste() {
+    void eliminarDevuelveFalsoSiElDroneNoExiste() throws Exception {
         assertFalse(droneDAO.eliminar("id-inexistente"));
     }
 
     @Test
-    void crearAgriculturaInsertaEnDroneYEnAgricultura() {
+    void crearAgriculturaInsertaEnDroneYEnAgricultura() throws Exception {
         String idUnico = "TEST-AGRO-" + UUID.randomUUID();
         Agricultura agricultura = new Agricultura(idUnico, "SER-AGRO", "ModeloAgro", "FabricanteAgro", 6.0, 20.0);
 
@@ -143,7 +143,7 @@ class DroneDAOTest {
     }
 
     @Test
-    void crearVigilanciaInsertaEnDroneYEnVigilancia() {
+    void crearVigilanciaInsertaEnDroneYEnVigilancia() throws Exception {
         String idUnico = "TEST-VIG-" + UUID.randomUUID();
         Vigilancia vigilancia = new Vigilancia(idUnico, "SER-VIG", "ModeloVig", "FabricanteVig", 3.0, true);
 
@@ -157,7 +157,7 @@ class DroneDAOTest {
     }
 
     @Test
-    void actualizarAgriculturaModificaCamposBaseYPropios() {
+    void actualizarAgriculturaModificaCamposBaseYPropios() throws Exception {
         String idUnico = "TEST-AGRO-" + UUID.randomUUID();
         droneDAO.crear(new Agricultura(idUnico, "SER-AGRO", "ModeloAgro", "FabricanteAgro", 6.0, 20.0));
         idCreado = idUnico;
@@ -171,7 +171,7 @@ class DroneDAOTest {
     }
 
     @Test
-    void eliminarUnaAgriculturaBorraLaFilaDeAgriculturaEnCascada() {
+    void eliminarUnaAgriculturaBorraLaFilaDeAgriculturaEnCascada() throws Exception {
         String idUnico = "TEST-AGRO-" + UUID.randomUUID();
         droneDAO.crear(new Agricultura(idUnico, "SER-AGRO", "ModeloAgro", "FabricanteAgro", 6.0, 20.0));
 

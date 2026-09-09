@@ -13,8 +13,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER"
-      spacing="15.0"
+<HBox alignment="TOP_CENTER"
+      spacing="20.0"
       stylesheets="@../css/style.css"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -24,65 +24,91 @@
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
-    <Label text="Gestor de Drones"
-           styleClass="titulo"/>
+    <VBox alignment="CENTER" spacing="15.0">
 
-    <GridPane hgap="10" vgap="10" alignment="CENTER">
-        <columnConstraints>
-            <ColumnConstraints minWidth="100"/>
-            <ColumnConstraints minWidth="220"/>
-        </columnConstraints>
+        <Label text="Gestor de Drones"
+               styleClass="titulo"/>
 
-        <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtId" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <GridPane hgap="10" vgap="10" alignment="CENTER">
+            <columnConstraints>
+                <ColumnConstraints minWidth="100"/>
+                <ColumnConstraints minWidth="220"/>
+            </columnConstraints>
 
-        <Label text="Serial:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtSerial" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtId" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-        <Label text="Modelo:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtModelo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <Label text="Serial:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtSerial" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-        <Label text="Fabricante:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtFabricante" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            <Label text="Modelo:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtModelo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-        <Label text="Peso (kg):" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtPeso" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+            <Label text="Fabricante:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtFabricante" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-        <Label text="Tipo:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="cbTipo" promptText="Selecciona un tipo" prefWidth="220"
-                  GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+            <Label text="Peso (kg):" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtPeso" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
-        <Label fx:id="lblCapacidadTanque" text="Capacidad tanque (L):"
-               GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtCapacidadTanque" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+            <Label text="Tipo:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cbTipo" promptText="Selecciona un tipo" prefWidth="220"
+                      GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
-        <Label fx:id="lblDeteccionTermica" text="Deteccion termica:"
-               GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-        <CheckBox fx:id="chkDeteccionTermica" text="Si"
-                  GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-    </GridPane>
+            <Label fx:id="lblCapacidadTanque" text="Capacidad tanque (L):"
+                   GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtCapacidadTanque" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
 
-    <HBox alignment="CENTER" spacing="10">
-        <Button fx:id="btnCrear" text="Crear" prefWidth="150" styleClass="crud-button" onAction="#onCrear"/>
-        <Button fx:id="btnConsultarTodos" text="Consultar todos" prefWidth="150" styleClass="crud-button" onAction="#onConsultarTodos"/>
-    </HBox>
+            <Label fx:id="lblDeteccionTermica" text="Deteccion termica:"
+                   GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <CheckBox fx:id="chkDeteccionTermica" text="Si"
+                      GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+        </GridPane>
 
-    <HBox alignment="CENTER" spacing="10">
-        <Button text="Consultar por ID" prefWidth="150" styleClass="crud-button" onAction="#onConsultarPorId"/>
-        <Button text="Actualizar" prefWidth="150" styleClass="crud-button" onAction="#onActualizar"/>
-        <Button text="Eliminar" prefWidth="150" styleClass="crud-button" onAction="#onEliminar"/>
-    </HBox>
+        <HBox alignment="CENTER" spacing="10">
+            <Button fx:id="btnCrear" text="Crear" prefWidth="150" styleClass="crud-button" onAction="#onCrear"/>
+            <Button fx:id="btnConsultarTodos" text="Consultar todos" prefWidth="150" styleClass="crud-button" onAction="#onConsultarTodos"/>
+        </HBox>
 
-    <TableView fx:id="tablaDrones" prefHeight="220" prefWidth="760">
-        <columns>
-            <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
-            <TableColumn fx:id="colSerial" text="Serial" prefWidth="110"/>
-            <TableColumn fx:id="colModelo" text="Modelo" prefWidth="100"/>
-            <TableColumn fx:id="colFabricante" text="Fabricante" prefWidth="110"/>
-            <TableColumn fx:id="colPeso" text="Peso (kg)" prefWidth="75"/>
-            <TableColumn fx:id="colCapacidadTanque" text="Capacidad tanque (L)" prefWidth="150"/>
-            <TableColumn fx:id="colDeteccionTermica" text="Deteccion termica" prefWidth="130"/>
-        </columns>
-    </TableView>
+        <HBox alignment="CENTER" spacing="10">
+            <Button text="Consultar por ID" prefWidth="150" styleClass="crud-button" onAction="#onConsultarPorId"/>
+            <Button text="Actualizar" prefWidth="150" styleClass="crud-button" onAction="#onActualizar"/>
+            <Button text="Eliminar" prefWidth="150" styleClass="crud-button" onAction="#onEliminar"/>
+            <Button text="Clonar" prefWidth="150" styleClass="crud-button" onAction="#onClonar"/>
+        </HBox>
 
-</VBox>
+        <HBox alignment="CENTER" spacing="10">
+            <Button text="Builder" prefWidth="150" styleClass="crud-button" onAction="#onBuilder"/>
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="20">
+            <Label fx:id="lblIdentidadOriginal" text="Original: -" styleClass="identidad-label"/>
+            <Label fx:id="lblIdentidadClon" text="Clon: -" styleClass="identidad-label"/>
+        </HBox>
+
+        <TableView fx:id="tablaDrones" prefHeight="220" prefWidth="760">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+                <TableColumn fx:id="colSerial" text="Serial" prefWidth="110"/>
+                <TableColumn fx:id="colModelo" text="Modelo" prefWidth="100"/>
+                <TableColumn fx:id="colFabricante" text="Fabricante" prefWidth="110"/>
+                <TableColumn fx:id="colPeso" text="Peso (kg)" prefWidth="75"/>
+                <TableColumn fx:id="colCapacidadTanque" text="Capacidad tanque (L)" prefWidth="150"/>
+                <TableColumn fx:id="colDeteccionTermica" text="Deteccion termica" prefWidth="130"/>
+            </columns>
+        </TableView>
+
+    </VBox>
+
+    <VBox alignment="TOP_CENTER" spacing="10.0">
+        <Label text="Original vs. Clon" styleClass="titulo"/>
+
+        <TableView fx:id="tablaComparacion" prefHeight="250" prefWidth="340">
+            <columns>
+                <TableColumn fx:id="colCampoComparacion" text="Campo" prefWidth="130"/>
+                <TableColumn fx:id="colOriginalComparacion" text="Original" prefWidth="100"/>
+                <TableColumn fx:id="colClonComparacion" text="Clon" prefWidth="100"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+</HBox>

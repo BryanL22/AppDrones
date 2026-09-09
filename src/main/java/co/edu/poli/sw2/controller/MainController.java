@@ -4,7 +4,11 @@ import co.edu.poli.sw2.dao.DroneDAO;
 import co.edu.poli.sw2.model.Agricultura;
 import co.edu.poli.sw2.model.Drone;
 import co.edu.poli.sw2.model.Vigilancia;
+import co.edu.poli.sw2.services.AgriculturaFactory;
+import co.edu.poli.sw2.services.DroneBuilder;
 import co.edu.poli.sw2.services.DroneFactory;
+import co.edu.poli.sw2.services.DronePrototype;
+import co.edu.poli.sw2.services.VigilanciaFactory;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -13,13 +17,20 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
+
+import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * Controlador asociado a la vista principal (GestorDrones.fxml).
@@ -51,6 +62,10 @@ public class MainController {
     private Label lblDeteccionTermica;
     @FXML
     private CheckBox chkDeteccionTermica;
+    @FXML
+    private Label lblIdentidadOriginal;
+    @FXML
+    private Label lblIdentidadClon;
 
     @FXML
     private TableView<Drone> tablaDrones;
@@ -69,6 +84,15 @@ public class MainController {
     @FXML
     private TableColumn<Drone, String> colDeteccionTermica;
 
+    @FXML
+    private TableView<FilaComparacion> tablaComparacion;
+    @FXML
+    private TableColumn<FilaComparacion, String> colCampoComparacion;
+    @FXML
+    private TableColumn<FilaComparacion, String> colOriginalComparacion;
+    @FXML
+    private TableColumn<FilaComparacion, String> colClonComparacion;
+
     private final DroneDAO droneDAO = new DroneDAO();
     private final ObservableList<Drone> drones = FXCollections.observableArrayList();
 
@@ -81,6 +105,10 @@ public class MainController {
         colPeso.setCellValueFactory(new PropertyValueFactory<>("peso"));
         colCapacidadTanque.setCellValueFactory(datos -> new SimpleStringProperty(capacidadTanqueDe(datos.getValue())));
         colDeteccionTermica.setCellValueFactory(datos -> new SimpleStringProperty(deteccionTermicaDe(datos.getValue())));
+
+        colCampoComparacion.setCellValueFactory(new PropertyValueFactory<>("campo"));
+        colOriginalComparacion.setCellValueFactory(new PropertyValueFactory<>("original"));
+        colClonComparacion.setCellValueFactory(new PropertyValueFactory<>("clon"));
 
         cbTipo.setItems(FXCollections.observableArrayList(DroneFactory.tiposDisponibles()));
         cbTipo.valueProperty().addListener((observable, anterior, nuevoTipo) -> mostrarCamposDeTipo(nuevoTipo));
@@ -123,21 +151,25 @@ public class MainController {
 
         id = id.trim();
 
-        if (droneDAO.obtenerPorId(id) != null) {
-            mostrarAlerta(AlertType.WARNING, "Ya existe un drone con el ID '" + id + "'. Elige otro.");
-            return;
-        }
-
         Drone drone = construirDrone(tipo, id, serial, modelo, fabricante, peso);
         if (drone == null) {
             return;
         }
 
-        if (droneDAO.crear(drone)) {
-            limpiarFormulario();
-            cargarDrones();
-        } else {
-            mostrarAlerta(AlertType.ERROR, "No se pudo guardar el drone en la base de datos.");
+        try {
+            if (droneDAO.obtenerPorId(id) != null) {
+                mostrarAlerta(AlertType.WARNING, "Ya existe un drone con el ID '" + id + "'. Elige otro.");
+                return;
+            }
+
+            if (droneDAO.crear(drone)) {
+                limpiarFormulario();
+                cargarDrones();
+            } else {
+                mostrarAlerta(AlertType.ERROR, "No se pudo guardar el drone en la base de datos.");
+            }
+        } catch (SQLException | IOException e) {
+            mostrarAlerta(AlertType.ERROR, "Error de base de datos: " + e.getMessage());
         }
     }
 
@@ -153,14 +185,18 @@ public class MainController {
             return;
         }
 
-        Drone drone = droneDAO.obtenerPorId(id);
-        if (drone == null) {
-            mostrarAlerta(AlertType.INFORMATION, "No existe un drone con el ID " + id + ".");
-            return;
-        }
+        try {
+            Drone drone = droneDAO.obtenerPorId(id);
+            if (drone == null) {
+                mostrarAlerta(AlertType.INFORMATION, "No existe un drone con el ID " + id + ".");
+                return;
+            }
 
-        llenarFormulario(drone);
-        tablaDrones.getSelectionModel().select(drone);
+            llenarFormulario(drone);
+            tablaDrones.getSelectionModel().select(drone);
+        } catch (SQLException | IOException e) {
+            mostrarAlerta(AlertType.ERROR, "Error de base de datos: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -196,12 +232,16 @@ public class MainController {
             return;
         }
 
-        if (droneDAO.actualizar(drone)) {
-            limpiarFormulario();
-            cargarDrones();
-        } else {
-            mostrarAlerta(AlertType.ERROR,
-                    "No se pudo actualizar el drone. Verifica que el ID exista y que el tipo coincida con el registrado.");
+        try {
+            if (droneDAO.actualizar(drone)) {
+                limpiarFormulario();
+                cargarDrones();
+            } else {
+                mostrarAlerta(AlertType.ERROR,
+                        "No se pudo actualizar el drone. Verifica que el ID exista y que el tipo coincida con el registrado.");
+            }
+        } catch (SQLException | IOException e) {
+            mostrarAlerta(AlertType.ERROR, "Error de base de datos: " + e.getMessage());
         }
     }
 
@@ -212,19 +252,148 @@ public class MainController {
             return;
         }
 
-        if (droneDAO.eliminar(id)) {
-            limpiarFormulario();
-            cargarDrones();
-        } else {
-            mostrarAlerta(AlertType.ERROR, "No se pudo eliminar el drone. Verifica que el ID exista.");
+        try {
+            if (droneDAO.eliminar(id)) {
+                limpiarFormulario();
+                cargarDrones();
+            } else {
+                mostrarAlerta(AlertType.ERROR, "No se pudo eliminar el drone. Verifica que el ID exista.");
+            }
+        } catch (SQLException | IOException e) {
+            mostrarAlerta(AlertType.ERROR, "Error de base de datos: " + e.getMessage());
         }
     }
 
     /**
+     * Clona (patron Prototype, via {@link DronePrototype}) el drone
+     * seleccionado en la tabla y carga el clon en el formulario. Muestra la
+     * identidad de memoria del original y del clon para evidenciar que son
+     * dos objetos distintos con los mismos datos.
+     */
+    @FXML
+    private void onClonar(ActionEvent event) {
+        Drone original = tablaDrones.getSelectionModel().getSelectedItem();
+        if (original == null) {
+            mostrarAlerta(AlertType.WARNING, "Selecciona un drone de la tabla para clonarlo.");
+            return;
+        }
+
+        Drone clon = DronePrototype.clonar(original);
+        llenarFormulario(clon);
+
+        lblIdentidadOriginal.setText("Original: " + identidadDe(original));
+        lblIdentidadClon.setText("Clon: " + identidadDe(clon));
+
+        tablaComparacion.setItems(FXCollections.observableArrayList(
+                new FilaComparacion("ID", original.getId(), clon.getId()),
+                new FilaComparacion("Serial", original.getSerial(), clon.getSerial()),
+                new FilaComparacion("Modelo", original.getModelo(), clon.getModelo()),
+                new FilaComparacion("Fabricante", original.getFabricante(), clon.getFabricante()),
+                new FilaComparacion("Peso (kg)", String.valueOf(original.getPeso()), String.valueOf(clon.getPeso())),
+                new FilaComparacion("Capacidad tanque (L)", capacidadTanqueDe(original), capacidadTanqueDe(clon)),
+                new FilaComparacion("Deteccion termica", deteccionTermicaDe(original), deteccionTermicaDe(clon))
+        ));
+    }
+
+    /**
+     * Abre un dialogo minimo (patron Builder, via {@link DroneBuilder}) que
+     * permite construir un drone de Agricultura llenando unicamente 3
+     * atributos (ID, peso y capacidad del tanque); el resto de los atributos
+     * comunes se completan con valores por defecto.
+     */
+    @FXML
+    private void onBuilder(ActionEvent event) {
+        Dialog<ButtonType> dialogo = new Dialog<>();
+        dialogo.setTitle("Builder");
+        dialogo.setHeaderText("Construir un drone de Agricultura llenando solo 3 atributos.");
+
+        ButtonType btnConstruir = new ButtonType("Construir", ButtonBar.ButtonData.OK_DONE);
+        dialogo.getDialogPane().getButtonTypes().addAll(btnConstruir, ButtonType.CANCEL);
+
+        TextField campoId = new TextField();
+        TextField campoPeso = new TextField();
+        TextField campoCapacidadTanque = new TextField();
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.addRow(0, new Label("ID:"), campoId);
+        grid.addRow(1, new Label("Peso (kg):"), campoPeso);
+        grid.addRow(2, new Label("Capacidad tanque (L):"), campoCapacidadTanque);
+        dialogo.getDialogPane().setContent(grid);
+
+        dialogo.showAndWait().ifPresent(boton -> {
+            if (boton == btnConstruir) {
+                construirConBuilder(campoId.getText(), campoPeso.getText(), campoCapacidadTanque.getText());
+            }
+        });
+    }
+
+    /**
+     * Valida y parsea los 3 atributos del dialogo del Builder, arma el drone
+     * de Agricultura con {@link DroneBuilder} (usando valores por defecto
+     * para serial, modelo y fabricante) y lo persiste con {@link #droneDAO}.
+     */
+    private void construirConBuilder(String idTexto, String pesoTexto, String capacidadTanqueTexto) {
+        if (esVacio(idTexto) || esVacio(pesoTexto) || esVacio(capacidadTanqueTexto)) {
+            mostrarAlerta(AlertType.WARNING, "Debes llenar ID, peso y capacidad del tanque.");
+            return;
+        }
+
+        double peso;
+        double capacidadTanque;
+        try {
+            peso = Double.parseDouble(pesoTexto.trim());
+            capacidadTanque = Double.parseDouble(capacidadTanqueTexto.trim());
+        } catch (NumberFormatException e) {
+            mostrarAlerta(AlertType.WARNING, "Peso y capacidad del tanque deben ser valores numericos.");
+            return;
+        }
+
+        String id = idTexto.trim();
+        Drone drone;
+        try {
+            drone = new DroneBuilder()
+                    .id(id)
+                    .serial("AUTO-" + id)
+                    .modelo("Generico")
+                    .fabricante("GenericoSA")
+                    .peso(peso)
+                    .capacidadTanque(capacidadTanque)
+                    .construir();
+        } catch (IllegalStateException e) {
+            mostrarAlerta(AlertType.ERROR, e.getMessage());
+            return;
+        }
+
+        try {
+            if (droneDAO.crear(drone)) {
+                cargarDrones();
+                mostrarAlerta(AlertType.INFORMATION, "Drone de Agricultura creado con el Builder.");
+            } else {
+                mostrarAlerta(AlertType.ERROR, "No se pudo guardar el drone construido en la base de datos.");
+            }
+        } catch (SQLException | IOException e) {
+            mostrarAlerta(AlertType.ERROR, "Error de base de datos: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Representa la identidad de un objeto en memoria, con el mismo formato
+     * que usa {@link Object#toString()} por defecto ({@code Clase@hash}),
+     * util para comprobar visualmente que dos referencias no apuntan a la
+     * misma instancia.
+     */
+    private String identidadDe(Drone drone) {
+        return drone.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(drone));
+    }
+
+    /**
      * Construye la instancia concreta ({@link Agricultura} o {@link Vigilancia})
-     * segun el tipo elegido en {@link #cbTipo}, delegando en {@link DroneFactory}.
-     * Antes de eso, lee y valida desde la vista el campo propio de la
-     * especializacion elegida.
+     * segun el tipo elegido en {@link #cbTipo}, delegando en la fabrica
+     * concreta ({@link AgriculturaFactory} o {@link VigilanciaFactory}) que
+     * extiende la plantilla {@link DroneFactory}. Antes de eso, lee y valida
+     * desde la vista el campo propio de la especializacion elegida.
      */
     private Drone construirDrone(String tipo, String id, String serial, String modelo, String fabricante,
                                   double peso) {
@@ -233,14 +402,18 @@ public class MainController {
             if (capacidadTanque == null) {
                 return null;
             }
-            return DroneFactory.crear(tipo, id, serial, modelo, fabricante, peso, capacidadTanque, false);
+            return new AgriculturaFactory(capacidadTanque).crear(id, serial, modelo, fabricante, peso);
         }
 
-        return DroneFactory.crear(tipo, id, serial, modelo, fabricante, peso, 0, chkDeteccionTermica.isSelected());
+        return new VigilanciaFactory(chkDeteccionTermica.isSelected()).crear(id, serial, modelo, fabricante, peso);
     }
 
     private void cargarDrones() {
-        drones.setAll(droneDAO.obtenerTodos());
+        try {
+            drones.setAll(droneDAO.obtenerTodos());
+        } catch (SQLException | IOException e) {
+            mostrarAlerta(AlertType.ERROR, "Error de base de datos: " + e.getMessage());
+        }
     }
 
     /**
@@ -349,5 +522,37 @@ public class MainController {
 
     private void mostrarAlerta(AlertType tipo, String mensaje) {
         new Alert(tipo, mensaje).showAndWait();
+    }
+
+    /**
+     * Fila de la tabla comparativa de {@link #onClonar}: un campo del dron
+     * con su valor en el original y en el clon, para evidenciar visualmente
+     * que ambos objetos tienen los mismos datos aunque sean instancias
+     * distintas. Sus getters siguen la convencion de propiedades de JavaFX
+     * porque {@link #colCampoComparacion} y compania los leen via
+     * {@link PropertyValueFactory}.
+     */
+    public static class FilaComparacion {
+        private final String campo;
+        private final String original;
+        private final String clon;
+
+        private FilaComparacion(String campo, String original, String clon) {
+            this.campo = campo;
+            this.original = original;
+            this.clon = clon;
+        }
+
+        public String getCampo() {
+            return campo;
+        }
+
+        public String getOriginal() {
+            return original;
+        }
+
+        public String getClon() {
+            return clon;
+        }
     }
 }

@@ -48,6 +48,18 @@ public class Agricultura extends Drone {
         this.capacidadTanque = capacidadTanque;
     }
 
+    /**
+     * Crea una copia de este dron de agricultura (patron Prototype), incluyendo
+     * su capacidad de tanque. El objeto devuelto tiene una identidad (referencia
+     * de memoria) distinta a la de {@code this}.
+     *
+     * @return una copia independiente de este dron de agricultura.
+     */
+    @Override
+    public Agricultura clone() {
+        return (Agricultura) super.clone();
+    }
+
     @Override
     public String toString() {
         return "Agricultura{" +

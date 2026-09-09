@@ -3,7 +3,6 @@ package co.edu.poli.sw2.services;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +54,7 @@ class ConexionTest {
     }
 
     @Test
-    void obtenerInstanciaSiempreDevuelveLaMismaInstancia() {
+    void obtenerInstanciaSiempreDevuelveLaMismaInstancia() throws Exception {
         Conexion primera = Conexion.obtenerInstancia();
         Conexion segunda = Conexion.obtenerInstancia();
 
@@ -63,7 +62,7 @@ class ConexionTest {
     }
 
     @Test
-    void getConnectionReutilizaLaMismaConexionMientrasSigaAbierta() throws SQLException {
+    void getConnectionReutilizaLaMismaConexionMientrasSigaAbierta() throws Exception {
         Conexion conexion = Conexion.obtenerInstancia();
 
         Connection primera = conexion.getConnection();
@@ -74,7 +73,7 @@ class ConexionTest {
     }
 
     @Test
-    void getConnectionAbreUnaNuevaConexionSiLaAnteriorFueCerrada() throws SQLException {
+    void getConnectionAbreUnaNuevaConexionSiLaAnteriorFueCerrada() throws Exception {
         Conexion conexion = Conexion.obtenerInstancia();
 
         Connection primera = conexion.getConnection();
