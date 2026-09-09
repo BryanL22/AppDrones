@@ -385,10 +385,10 @@ public class MainController {
 
     /**
      * Toma el drone seleccionado en la tabla y arma la cadena del patron
-     * Decorator ({@link DronComponent} -&gt; {@link DronWrapper} ->
-     * {@link BateriaAdicional}) para mostrar, en un Alert, la descripcion y
-     * el peso del drone. Si {@link #chkBateriaAdicional} esta marcado, se le
-     * agrega la bateria adicional; si no, se muestra sin decorar.
+     * Decorator ({@link DronWrapper} -&gt; {@link BateriaAdicional}, ambos
+     * implementando {@link DronComponent}) para mostrar, en un Alert, la
+     * descripcion del drone. Si {@link #chkBateriaAdicional} esta marcado,
+     * se le agrega la bateria adicional; si no, se muestra sin decorar.
      */
     @FXML
     private void onDecorator(ActionEvent event) {
@@ -398,18 +398,15 @@ public class MainController {
             return;
         }
 
-        DronComponent componente = new DronComponent(seleccionado);
-        DronWrapper wrapper = new DronWrapper(componente);
+        DronWrapper wrapper = new DronWrapper(seleccionado);
 
         String mensaje;
         if (chkBateriaAdicional.isSelected()) {
             BateriaAdicional conBateriaAdicional = new BateriaAdicional(wrapper);
             mensaje = "Con Bateria Adicional (Decorator):\n" + conBateriaAdicional.describir()
-                    + "\nPeso: " + conBateriaAdicional.getPesoTotal() + " kg"
                     + "\nAutonomia adicional: +" + conBateriaAdicional.getAutonomiaAdicionalMinutos() + " min";
         } else {
-            mensaje = "Sin decorar:\n" + wrapper.describir()
-                    + "\nPeso: " + wrapper.getPesoTotal() + " kg";
+            mensaje = "Sin decorar:\n" + wrapper.describir();
         }
 
         mostrarAlerta(AlertType.INFORMATION, mensaje);

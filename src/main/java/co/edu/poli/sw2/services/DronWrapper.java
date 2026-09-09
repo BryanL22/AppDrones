@@ -1,22 +1,36 @@
 package co.edu.poli.sw2.services;
 
+import co.edu.poli.sw2.model.Drone;
+
 /**
- * Envoltorio (patron Decorator) que envuelve un {@link DronComponent} por
- * composicion y, por defecto, delega en el toda su descripcion y peso.
+ * Decorador base (patron Decorator) que envuelve un {@link DronComponent}
+ * por composicion y, por defecto, delega en el toda su descripcion.
  *
- * <p>En vez de una clase abstracta {@code DronDecorator}, esta clase
- * concreta cumple ese rol: sirve de base para agregar caracteristicas
- * adicionales encadenando envoltorios via constructor, como hace
- * {@link BateriaAdicional} al envolver una instancia de {@code DronWrapper}.</p>
+ * <p>Guarda una referencia a {@code DronComponent} -no a un {@link Drone}
+ * directamente- para poder decorar tanto un drone recien adaptado
+ * ({@link DronComponent#of(Drone)}) como otro decorador ya aplicado. En vez
+ * de una clase abstracta {@code DronDecorator}, esta clase concreta cumple
+ * ese rol: sirve de base para agregar caracteristicas adicionales
+ * encadenando envoltorios via constructor, como hace {@link BateriaAdicional}
+ * al extenderla.</p>
  */
-public class DronWrapper {
+public class DronWrapper implements DronComponent {
 
     private final DronComponent componente;
 
     /**
+     * Adapta el drone recibido a un {@code DronComponent} y lo envuelve.
+     *
+     * @param drone drone existente a decorar.
+     */
+    public DronWrapper(Drone drone) {
+        this(DronComponent.of(drone));
+    }
+
+    /**
      * Envuelve el componente recibido.
      *
-     * @param componente componente (drone ya envuelto) a decorar.
+     * @param componente componente (drone adaptado u otro decorador) a decorar.
      */
     public DronWrapper(DronComponent componente) {
         this.componente = componente;
@@ -36,16 +50,8 @@ public class DronWrapper {
      *
      * @return la descripcion del componente envuelto.
      */
+    @Override
     public String describir() {
         return componente.describir();
-    }
-
-    /**
-     * Devuelve el peso total delegando en el componente envuelto.
-     *
-     * @return el peso del componente envuelto, en kilogramos.
-     */
-    public double getPesoTotal() {
-        return componente.getPesoTotal();
     }
 }

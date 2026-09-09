@@ -19,13 +19,18 @@
  *     construirlo, si corresponde una {@link co.edu.poli.sw2.model.Agricultura},
  *     una {@link co.edu.poli.sw2.model.Vigilancia} o un dron sin
  *     especializacion.</li>
- *     <li>{@link co.edu.poli.sw2.services.DronComponent}: Decorator que
- *     envuelve un {@link co.edu.poli.sw2.model.Drone} por composicion;
- *     {@link co.edu.poli.sw2.services.DronWrapper} lo envuelve a su vez, y
- *     {@link co.edu.poli.sw2.services.BateriaAdicional} es el decorador
- *     concreto que le agrega la caracteristica de una bateria adicional,
- *     encadenando envoltorios via constructor sin necesitar una clase
- *     abstracta intermedia.</li>
+ *     <li>{@link co.edu.poli.sw2.services.DronComponent}: Decorator -
+ *     interfaz que declara el contrato comun ({@code describir()}) e incluye
+ *     el metodo estatico {@code of(Drone)} que adapta un
+ *     {@link co.edu.poli.sw2.model.Drone} real a un componente inicial.
+ *     {@link co.edu.poli.sw2.services.DronWrapper} la implementa como
+ *     decorador base, envolviendo cualquier {@code DronComponent} (un drone
+ *     adaptado u otro decorador); {@link co.edu.poli.sw2.services.BateriaAdicional}
+ *     extiende {@code DronWrapper} como decorador concreto que agrega la
+ *     caracteristica de una bateria adicional, y al recibir un
+ *     {@code DronComponent} generico puede encadenarse sobre el drone base
+ *     o sobre otro decorador ya aplicado (incluida otra bateria), sin
+ *     necesitar una clase abstracta intermedia.</li>
  * </ul>
  */
 package co.edu.poli.sw2.services;

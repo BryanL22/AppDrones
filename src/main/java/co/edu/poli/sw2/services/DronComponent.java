@@ -3,53 +3,33 @@ package co.edu.poli.sw2.services;
 import co.edu.poli.sw2.model.Drone;
 
 /**
- * Componente base del patron Decorator: envuelve un {@link Drone} ya
- * existente (del paquete {@code model}, sin modificarlo) para que
- * {@link DronWrapper} y los decoradores concretos como
- * {@link BateriaAdicional} puedan agregarle caracteristicas por composicion,
- * encadenando envoltorios via constructor:
- * {@code Drone -> DronComponent -> DronWrapper -> BateriaAdicional}.
+ * Componente del patron Decorator: contrato comun que implementan tanto el
+ * decorador base ({@link DronWrapper}) como los decoradores concretos que lo
+ * extienden (por ejemplo, {@link BateriaAdicional}), de modo que un
+ * decorador pueda envolver indistintamente un {@link Drone} recien adaptado
+ * o a otro decorador ya aplicado, permitiendo encadenar varias
+ * caracteristicas sobre el mismo drone.
  */
-public class DronComponent {
-
-    private final Drone drone;
+public interface DronComponent {
 
     /**
-     * Envuelve el drone recibido.
+     * Describe el drone envuelto, incluyendo lo que haya agregado cada
+     * decorador aplicado.
      *
-     * @param drone drone existente a decorar.
+     * @return una descripcion legible del drone decorado.
      */
-    public DronComponent(Drone drone) {
-        this.drone = drone;
-    }
+    String describir();
 
     /**
-     * Devuelve el drone envuelto por este componente.
+     * Adapta un {@link Drone} existente (del paquete {@code model}, sin
+     * modificarlo) a un {@code DronComponent} con su descripcion basica,
+     * punto de partida para encadenar decoradores como {@link DronWrapper}
+     * y {@link BateriaAdicional}.
      *
-     * @return el drone original, sin decorar.
+     * @param drone drone existente a adaptar.
+     * @return un componente que describe el drone recibido.
      */
-    public Drone getDrone() {
-        return drone;
-    }
-
-    /**
-     * Describe el drone envuelto con sus datos basicos. Los decoradores le
-     * agregan texto a esta descripcion en vez de reemplazarla.
-     *
-     * @return una descripcion legible del drone.
-     */
-    public String describir() {
-        return drone.getModelo() + " (" + drone.getFabricante() + "), " + drone.getPeso() + " kg";
-    }
-
-    /**
-     * Devuelve el peso del drone envuelto. Los decoradores que agregan
-     * accesorios con peso propio (por ejemplo, {@link BateriaAdicional}) lo
-     * suman a este valor.
-     *
-     * @return el peso del drone, en kilogramos.
-     */
-    public double getPesoTotal() {
-        return drone.getPeso();
+    static DronComponent of(Drone drone) {
+        return () -> drone.getModelo() + " (" + drone.getFabricante() + ")";
     }
 }
