@@ -35,10 +35,18 @@ import java.util.List;
  *     <li>{@code sensor}: cada fila pertenece a un unico dron mediante
  *     {@code id_drone} (relacion de 1 dron a muchos sensores,
  *     {@code ON DELETE CASCADE}).</li>
+ *     <li>{@code mision}: independiente. Se relaciona con {@code drone} en
+ *     una relacion muchos-a-muchos (una mision usa varios drones y un mismo
+ *     dron puede participar en varias misiones), asi que no existe una unica
+ *     columna de llave foranea posible; en su lugar se usa la tabla
+ *     intermedia {@code mision_drone}, con una llave foranea hacia cada lado
+ *     ({@code id_mision}, {@code id_drone}) y llave primaria compuesta por
+ *     ambas ({@code ON DELETE CASCADE} en las dos, para no dejar asignaciones
+ *     huerfanas si se borra la mision o el dron).</li>
  * </ul>
  * <p>Por ahora solo se crean sus tablas (a nivel de base de datos); todavia
- * no hay operaciones CRUD en Java para {@link co.edu.poli.sw2.model.Piloto}
- * ni {@link co.edu.poli.sw2.model.Sensor}.</p>
+ * no hay operaciones CRUD en Java para {@link co.edu.poli.sw2.model.Piloto},
+ * {@link co.edu.poli.sw2.model.Sensor} ni {@link co.edu.poli.sw2.model.Mision}.</p>
  *
  * <p>El identificador de cada dron lo asigna el usuario manualmente (no se
  * genera de forma automatica) y es la llave primaria de {@code drone}.</p>
@@ -82,6 +90,23 @@ public class DroneDAO implements CRUD<Drone> {
             "id_drone VARCHAR(100) NOT NULL, " +
             "FOREIGN KEY (id_drone) REFERENCES drone(id) ON DELETE CASCADE)";
 
+    private static final String SQL_CREAR_TABLA_MISION = "CREATE TABLE IF NOT EXISTS mision (" +
+            "id VARCHAR(100) PRIMARY KEY, " +
+            "nombre VARCHAR(100) NOT NULL, " +
+            "ubicacion VARCHAR(100) NOT NULL, " +
+            "fecha VARCHAR(100) NOT NULL)";
+
+    // Tabla intermedia (resuelve la relacion muchos-a-muchos entre mision y
+    // drone: una mision usa varios drones y un mismo drone puede participar
+    // en varias misiones). La llave primaria compuesta evita ademas que un
+    // mismo drone quede asignado dos veces a la misma mision.
+    private static final String SQL_CREAR_TABLA_MISION_DRONE = "CREATE TABLE IF NOT EXISTS mision_drone (" +
+            "id_mision VARCHAR(100) NOT NULL, " +
+            "id_drone VARCHAR(100) NOT NULL, " +
+            "PRIMARY KEY (id_mision, id_drone), " +
+            "FOREIGN KEY (id_mision) REFERENCES mision(id) ON DELETE CASCADE, " +
+            "FOREIGN KEY (id_drone) REFERENCES drone(id) ON DELETE CASCADE)";
+
     private static final String SQL_VERIFICAR_COLUMNA_ID_PILOTO =
             "SELECT COUNT(*) FROM information_schema.columns " +
                     "WHERE table_schema = DATABASE() AND table_name = 'drone' AND column_name = 'id_piloto'";
@@ -108,9 +133,11 @@ public class DroneDAO implements CRUD<Drone> {
      * Obtiene la conexion compartida (Singleton) y garantiza que todas las
      * tablas existan, en un orden que respeta sus llaves foraneas: primero
      * {@code piloto} (de la que depende {@code drone}), luego {@code drone},
-     * despues {@code agricultura}/{@code vigilancia} y {@code sensor} (que
-     * dependen de {@code drone}). La conexion no se cierra aqui: la
-     * administra {@link Conexion} durante toda la vida de la aplicacion.
+     * despues {@code agricultura}/{@code vigilancia}/{@code sensor} (que
+     * dependen de {@code drone}) y {@code mision}, y por ultimo la tabla
+     * intermedia {@code mision_drone} (que depende de {@code drone} y de
+     * {@code mision}). La conexion no se cierra aqui: la administra
+     * {@link Conexion} durante toda la vida de la aplicacion.
      *
      * @return conexion JDBC lista para usar.
      * @throws SQLException si falla la conexion o la creacion de alguna tabla.
@@ -124,6 +151,8 @@ public class DroneDAO implements CRUD<Drone> {
         crearTabla(connection, SQL_CREAR_TABLA_AGRICULTURA);
         crearTabla(connection, SQL_CREAR_TABLA_VIGILANCIA);
         crearTabla(connection, SQL_CREAR_TABLA_SENSOR);
+        crearTabla(connection, SQL_CREAR_TABLA_MISION);
+        crearTabla(connection, SQL_CREAR_TABLA_MISION_DRONE);
         return connection;
     }
 
