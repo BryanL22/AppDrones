@@ -6,49 +6,34 @@ import co.edu.poli.sw2.model.Piloto;
 import co.edu.poli.sw2.model.Sensor;
 import co.edu.poli.sw2.model.Vigilancia;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Builder unificado para la jerarquia {@link Drone} y sus subtipos
- * ({@link Agricultura} y {@link Vigilancia}).
+ * Builder (patron Builder) para construir un {@link Drone} paso a paso.
  *
- * <h3>Problema que resuelve</h3>
- * <p>La clase base {@link Drone} y sus especializaciones comparten un
- * conjunto amplio de atributos comunes (id, serial, modelo, fabricante,
- * peso, piloto, sensores) y difieren unicamente en uno o dos campos
- * propios de cada subtipo. Construir estos objetos directamente con
- * {@code new} obliga al cliente a recordar el orden exacto de los
- * parametros, a pasar valores que no aplican al subtipo deseado y a
- * repetir la logica de seleccion de la subclase correcta. El patron
- * Builder encapsula esa complejidad: el cliente configura paso a paso
- * solo los atributos que necesita y delega en {@link #construir()} la
- * decision de que subclase instanciar.</p>
+ * <p>Un unico builder cubre toda la jerarquia: se van encadenando los
+ * atributos comunes de {@link Drone} y, opcionalmente, los propios de una
+ * unica especializacion ({@link Agricultura} o {@link Vigilancia}). El unico
+ * atributo obligatorio es {@code id}; el resto es opcional y puede omitirse
+ * (por ejemplo, un dron solo con {@code id} y {@code peso}, o solo con
+ * {@code id} y el atributo de una especializacion). {@link #construir()}
+ * decide, segun que atributos especificos se hayan establecido, que clase
+ * concreta instanciar:</p>
+ * <ul>
+ *     <li>Ninguno especifico establecido: construye un {@link Drone}.</li>
+ *     <li>Solo los de Agricultura ({@code capacidadTanque}): construye una
+ *     {@link Agricultura}.</li>
+ *     <li>Solo los de Vigilancia ({@code deteccionTermica}): construye una
+ *     {@link Vigilancia}.</li>
+ *     <li>Los de ambas especializaciones a la vez: lanza
+ *     {@link IllegalStateException}, ya que un mismo dron no puede ser las
+ *     dos cosas.</li>
+ * </ul>
  *
- * <h3>Por que un unico Builder para todos los subtipos</h3>
- * <p>Dado que {@link Agricultura} y {@link Vigilancia} comparten la
- * gran mayoria de sus atributos con {@link Drone}, tener un Builder
- * por subtipo duplicaria practicamente todo el codigo. Un unico Builder
- * con metodos fluidos para los campos comunes y para cada campo
- * especifico resulta mas simple, coherente y facil de mantener. El
- * metodo {@link #construir()} determina automaticamente el subtipo a
- * partir de los campos especificos que el cliente haya configurado.</p>
- *
- * <h3>Por que esta en el paquete {@code services} y no en {@code model}</h3>
- * <p>El paquete {@code model} contiene exclusivamente las entidades de
- * dominio (POJOs puros). El Builder, en cambio, es logica de
- * construccion y seleccion de subtipo: una responsabilidad de servicio,
- * no de dominio. Ubicarlo en {@code services} respeta la separacion de
- * responsabilidades del proyecto: {@code model} define <em>que</em> es
- * un dron; {@code services} define <em>como</em> se construye.</p>
- *
- * <p>Adicionalmente, mantener el Builder fuera de {@code model} permite
- * cumplir la restriccion de no modificar ninguna clase del paquete
- * {@code model}.</p>
+ * <p>Solo usa los constructores (sin argumentos) y setters publicos que ya
+ * existen en {@code model}; no depende de ningun cambio en ese paquete.</p>
  */
 public class DroneBuilder {
-
-    // ── Atributos comunes de Drone ──────────────────────────────────
 
     private String id;
     private String serial;
@@ -58,23 +43,14 @@ public class DroneBuilder {
     private Piloto piloto;
     private List<Sensor> sensores;
 
-    // ── Atributo especifico de Agricultura ──────────────────────────
-
     private Double capacidadTanque;
-    private boolean capacidadTanqueConfigurada;
-
-    // ── Atributo especifico de Vigilancia ───────────────────────────
-
     private Boolean deteccionTermica;
-    private boolean deteccionTermicaConfigurada;
-
-    // ── Metodos fluidos: atributos comunes ──────────────────────────
 
     /**
-     * Asigna el identificador del dron.
+     * Establece el identificador del dron.
      *
-     * @param id identificador unico del dron.
-     * @return esta misma instancia del builder para encadenamiento.
+     * @param id identificador a asignar.
+     * @return este builder, para encadenar mas llamadas.
      */
     public DroneBuilder id(String id) {
         this.id = id;
@@ -82,10 +58,10 @@ public class DroneBuilder {
     }
 
     /**
-     * Asigna el numero de serie del dron.
+     * Establece el numero de serie del dron.
      *
-     * @param serial numero de serie del dron.
-     * @return esta misma instancia del builder para encadenamiento.
+     * @param serial serial a asignar.
+     * @return este builder, para encadenar mas llamadas.
      */
     public DroneBuilder serial(String serial) {
         this.serial = serial;
@@ -93,10 +69,10 @@ public class DroneBuilder {
     }
 
     /**
-     * Asigna el modelo del dron.
+     * Establece el modelo del dron.
      *
-     * @param modelo modelo del dron.
-     * @return esta misma instancia del builder para encadenamiento.
+     * @param modelo modelo a asignar.
+     * @return este builder, para encadenar mas llamadas.
      */
     public DroneBuilder modelo(String modelo) {
         this.modelo = modelo;
@@ -104,10 +80,10 @@ public class DroneBuilder {
     }
 
     /**
-     * Asigna el fabricante del dron.
+     * Establece el fabricante del dron.
      *
-     * @param fabricante fabricante del dron.
-     * @return esta misma instancia del builder para encadenamiento.
+     * @param fabricante fabricante a asignar.
+     * @return este builder, para encadenar mas llamadas.
      */
     public DroneBuilder fabricante(String fabricante) {
         this.fabricante = fabricante;
@@ -115,10 +91,10 @@ public class DroneBuilder {
     }
 
     /**
-     * Asigna el peso del dron en kilogramos.
+     * Establece el peso del dron en kilogramos.
      *
-     * @param peso peso del dron en kilogramos.
-     * @return esta misma instancia del builder para encadenamiento.
+     * @param peso peso a asignar.
+     * @return este builder, para encadenar mas llamadas.
      */
     public DroneBuilder peso(double peso) {
         this.peso = peso;
@@ -126,10 +102,10 @@ public class DroneBuilder {
     }
 
     /**
-     * Asigna el piloto responsable de operar el dron.
+     * Establece el piloto asignado al dron.
      *
-     * @param piloto piloto a asignar al dron.
-     * @return esta misma instancia del builder para encadenamiento.
+     * @param piloto piloto a asignar.
+     * @return este builder, para encadenar mas llamadas.
      */
     public DroneBuilder piloto(Piloto piloto) {
         this.piloto = piloto;
@@ -137,91 +113,93 @@ public class DroneBuilder {
     }
 
     /**
-     * Asigna la lista de sensores instalados en el dron.
+     * Establece los sensores instalados en el dron.
      *
-     * @param sensores lista de sensores a asignar al dron.
-     * @return esta misma instancia del builder para encadenamiento.
+     * @param sensores lista de sensores a asignar.
+     * @return este builder, para encadenar mas llamadas.
      */
     public DroneBuilder sensores(List<Sensor> sensores) {
         this.sensores = sensores;
         return this;
     }
 
-    // ── Metodos fluidos: atributos especificos ──────────────────────
-
     /**
-     * Asigna la capacidad del tanque de insumos.
-     * <p>Al invocar este metodo, el builder interpreta que se desea
-     * construir un {@link Agricultura}.</p>
+     * Establece la capacidad del tanque (atributo especifico de
+     * {@link Agricultura}).
      *
      * @param capacidadTanque capacidad del tanque en litros.
-     * @return esta misma instancia del builder para encadenamiento.
+     * @return este builder, para encadenar mas llamadas.
      */
     public DroneBuilder capacidadTanque(double capacidadTanque) {
         this.capacidadTanque = capacidadTanque;
-        this.capacidadTanqueConfigurada = true;
         return this;
     }
 
     /**
-     * Asigna si el dron cuenta con deteccion termica.
-     * <p>Al invocar este metodo, el builder interpreta que se desea
-     * construir un {@link Vigilancia}.</p>
+     * Establece si el dron tiene deteccion termica (atributo especifico de
+     * {@link Vigilancia}).
      *
-     * @param deteccionTermica {@code true} si el dron tiene deteccion
-     *                         termica, {@code false} en caso contrario.
-     * @return esta misma instancia del builder para encadenamiento.
+     * @param deteccionTermica si el dron tiene deteccion termica.
+     * @return este builder, para encadenar mas llamadas.
      */
     public DroneBuilder deteccionTermica(boolean deteccionTermica) {
         this.deteccionTermica = deteccionTermica;
-        this.deteccionTermicaConfigurada = true;
         return this;
     }
 
-    // ── Metodo de construccion ──────────────────────────────────────
-
     /**
-     * Construye la instancia de {@link Drone} (o de su subtipo
-     * correspondiente) a partir de los atributos configurados.
+     * Construye el dron con los atributos establecidos hasta el momento.
+     * Instancia con el constructor sin argumentos (de {@link Drone},
+     * {@link Agricultura} o {@link Vigilancia}, segun corresponda) y aplica
+     * un setter por cada atributo que se haya establecido; los que no se
+     * establecieron simplemente quedan con su valor por defecto.
      *
-     * <p>Logica de determinacion del subtipo:</p>
-     * <ol>
-     *     <li>Si no se configuro ningun atributo especifico de subtipo,
-     *         se construye un {@link Drone} base.</li>
-     *     <li>Si se configuro unicamente {@link #capacidadTanque(double)},
-     *         se construye un {@link Agricultura}.</li>
-     *     <li>Si se configuro unicamente {@link #deteccionTermica(boolean)},
-     *         se construye un {@link Vigilancia}.</li>
-     *     <li>Si se configuraron atributos de dos o mas subtipos a la
-     *         vez, se lanza {@link IllegalStateException} indicando el
-     *         conflicto.</li>
-     * </ol>
-     *
-     * <p>Antes de construir, valida que los cinco atributos comunes
-     * obligatorios ({@code id}, {@code serial}, {@code modelo},
-     * {@code fabricante} y {@code peso}) esten presentes. Si falta
-     * alguno, lanza {@link IllegalStateException}.</p>
-     *
-     * @return la instancia construida de {@link Drone}, {@link Agricultura}
-     *         o {@link Vigilancia}.
-     * @throws IllegalStateException si falta un atributo obligatorio o si
-     *         se configuraron atributos de mas de un subtipo.
+     * @return un {@link Drone}, {@link Agricultura} o {@link Vigilancia},
+     *         segun los atributos especificos que se hayan establecido.
+     * @throws IllegalStateException si falta el atributo obligatorio
+     *         ({@code id}), o si se establecieron atributos especificos de
+     *         mas de una especializacion a la vez.
      */
-    public Drone construir() {
-        validarObligatorios();
-        validarConflictoDeSubtipos();
-
-        Drone drone;
-
-        if (capacidadTanqueConfigurada) {
-            drone = new Agricultura(id, serial, modelo, fabricante, peso, capacidadTanque);
-        } else if (deteccionTermicaConfigurada) {
-            drone = new Vigilancia(id, serial, modelo, fabricante, peso, deteccionTermica);
-        } else {
-            drone = new Drone(id, serial, modelo, fabricante, peso);
+    public final Drone construir() {
+        if (esVacio(id)) {
+            throw new IllegalStateException("Falta el atributo obligatorio del drone: id.");
         }
 
-        // Asignar atributos opcionales mediante los setters existentes.
+        boolean tieneAgricultura = capacidadTanque != null;
+        boolean tieneVigilancia = deteccionTermica != null;
+
+        if (tieneAgricultura && tieneVigilancia) {
+            throw new IllegalStateException("Conflicto al construir el drone: se establecieron atributos de "
+                    + "Agricultura (capacidadTanque) y de Vigilancia (deteccionTermica) al mismo tiempo; "
+                    + "un drone solo puede tener una especializacion.");
+        }
+
+        Drone drone;
+        if (tieneAgricultura) {
+            Agricultura agricultura = new Agricultura();
+            agricultura.setCapacidadTanque(capacidadTanque);
+            drone = agricultura;
+        } else if (tieneVigilancia) {
+            Vigilancia vigilancia = new Vigilancia();
+            vigilancia.setDeteccionTermica(deteccionTermica);
+            drone = vigilancia;
+        } else {
+            drone = new Drone();
+        }
+
+        drone.setId(id);
+        if (serial != null) {
+            drone.setSerial(serial);
+        }
+        if (modelo != null) {
+            drone.setModelo(modelo);
+        }
+        if (fabricante != null) {
+            drone.setFabricante(fabricante);
+        }
+        if (peso != null) {
+            drone.setPeso(peso);
+        }
         if (piloto != null) {
             drone.setPiloto(piloto);
         }
@@ -232,40 +210,7 @@ public class DroneBuilder {
         return drone;
     }
 
-    // ── Validaciones internas ───────────────────────────────────────
-
-    private void validarObligatorios() {
-        List<String> faltantes = new ArrayList<>();
-
-        if (id == null || id.isBlank()) {
-            faltantes.add("id");
-        }
-        if (serial == null || serial.isBlank()) {
-            faltantes.add("serial");
-        }
-        if (modelo == null || modelo.isBlank()) {
-            faltantes.add("modelo");
-        }
-        if (fabricante == null || fabricante.isBlank()) {
-            faltantes.add("fabricante");
-        }
-        if (peso == null) {
-            faltantes.add("peso");
-        }
-
-        if (!faltantes.isEmpty()) {
-            throw new IllegalStateException(
-                    "No se puede construir el Drone: faltan los siguientes atributos obligatorios: "
-                            + String.join(", ", faltantes) + ".");
-        }
-    }
-
-    private void validarConflictoDeSubtipos() {
-        if (capacidadTanqueConfigurada && deteccionTermicaConfigurada) {
-            throw new IllegalStateException(
-                    "Conflicto de subtipos: se configuraron atributos de Agricultura "
-                            + "(capacidadTanque) y de Vigilancia (deteccionTermica) al mismo tiempo. "
-                            + "Un dron solo puede pertenecer a un subtipo.");
-        }
+    private boolean esVacio(String texto) {
+        return texto == null || texto.isBlank();
     }
 }

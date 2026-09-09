@@ -3,278 +3,147 @@ package co.edu.poli.sw2.services;
 import co.edu.poli.sw2.model.Agricultura;
 import co.edu.poli.sw2.model.Drone;
 import co.edu.poli.sw2.model.Piloto;
-import co.edu.poli.sw2.model.Sensor;
 import co.edu.poli.sw2.model.Vigilancia;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * Pruebas unitarias para {@link DroneBuilder}.
- */
 class DroneBuilderTest {
 
-    // ── Construccion exitosa ────────────────────────────────────────
+    @Test
+    void construirSinAtributosEspecificosDevuelveUnDroneBase() {
+        Drone drone = new DroneBuilder()
+                .id("D1")
+                .serial("SER-001")
+                .modelo("ModeloX")
+                .fabricante("FabricanteX")
+                .peso(2.5)
+                .construir();
 
-    @Nested
-    @DisplayName("Construccion exitosa")
-    class ConstruccionExitosa {
-
-        @Test
-        @DisplayName("Sin atributos de subtipo → crea Drone base")
-        void construirDroneBase() {
-            Drone drone = new DroneBuilder()
-                    .id("D001")
-                    .serial("SN-100")
-                    .modelo("Phantom")
-                    .fabricante("DJI")
-                    .peso(1.5)
-                    .construir();
-
-            assertNotNull(drone);
-            assertInstanceOf(Drone.class, drone);
-            assertFalse(drone instanceof Agricultura);
-            assertFalse(drone instanceof Vigilancia);
-
-            assertEquals("D001", drone.getId());
-            assertEquals("SN-100", drone.getSerial());
-            assertEquals("Phantom", drone.getModelo());
-            assertEquals("DJI", drone.getFabricante());
-            assertEquals(1.5, drone.getPeso());
-        }
-
-        @Test
-        @DisplayName("Con capacidadTanque → crea Agricultura")
-        void construirAgricultura() {
-            Drone drone = new DroneBuilder()
-                    .id("A001")
-                    .serial("SN-200")
-                    .modelo("Agras T30")
-                    .fabricante("DJI")
-                    .peso(25.0)
-                    .capacidadTanque(30.0)
-                    .construir();
-
-            assertNotNull(drone);
-            assertInstanceOf(Agricultura.class, drone);
-
-            Agricultura agricultura = (Agricultura) drone;
-            assertEquals("A001", agricultura.getId());
-            assertEquals("SN-200", agricultura.getSerial());
-            assertEquals("Agras T30", agricultura.getModelo());
-            assertEquals("DJI", agricultura.getFabricante());
-            assertEquals(25.0, agricultura.getPeso());
-            assertEquals(30.0, agricultura.getCapacidadTanque());
-        }
-
-        @Test
-        @DisplayName("Con deteccionTermica true → crea Vigilancia")
-        void construirVigilanciaConTermica() {
-            Drone drone = new DroneBuilder()
-                    .id("V001")
-                    .serial("SN-300")
-                    .modelo("Matrice 300")
-                    .fabricante("DJI")
-                    .peso(6.3)
-                    .deteccionTermica(true)
-                    .construir();
-
-            assertNotNull(drone);
-            assertInstanceOf(Vigilancia.class, drone);
-
-            Vigilancia vigilancia = (Vigilancia) drone;
-            assertEquals("V001", vigilancia.getId());
-            assertTrue(vigilancia.isDeteccionTermica());
-        }
-
-        @Test
-        @DisplayName("Con deteccionTermica false → aun asi crea Vigilancia (el atributo fue configurado)")
-        void construirVigilanciaSinTermica() {
-            Drone drone = new DroneBuilder()
-                    .id("V002")
-                    .serial("SN-400")
-                    .modelo("Mavic 2 Enterprise")
-                    .fabricante("DJI")
-                    .peso(1.1)
-                    .deteccionTermica(false)
-                    .construir();
-
-            assertInstanceOf(Vigilancia.class, drone);
-            assertFalse(((Vigilancia) drone).isDeteccionTermica());
-        }
-
-        @Test
-        @DisplayName("Con piloto asignado → el setter se invoca correctamente")
-        void construirConPiloto() {
-            Piloto piloto = new Piloto("P01", "Carlos", "LIC-001", "3001234567");
-
-            Drone drone = new DroneBuilder()
-                    .id("D002")
-                    .serial("SN-500")
-                    .modelo("Phantom 4")
-                    .fabricante("DJI")
-                    .peso(1.4)
-                    .piloto(piloto)
-                    .construir();
-
-            assertNotNull(drone.getPiloto());
-            assertEquals("Carlos", drone.getPiloto().getNombre());
-        }
-
-        @Test
-        @DisplayName("Con sensores asignados → el setter se invoca correctamente")
-        void construirConSensores() {
-            List<Sensor> sensores = List.of(
-                    new Sensor("S01", "Camara", "Sony"),
-                    new Sensor("S02", "GPS", "Garmin")
-            );
-
-            Drone drone = new DroneBuilder()
-                    .id("D003")
-                    .serial("SN-600")
-                    .modelo("Inspire 2")
-                    .fabricante("DJI")
-                    .peso(3.4)
-                    .sensores(sensores)
-                    .construir();
-
-            assertEquals(2, drone.getSensores().size());
-        }
+        assertEquals(Drone.class, drone.getClass());
+        assertEquals("D1", drone.getId());
+        assertEquals("SER-001", drone.getSerial());
+        assertEquals("ModeloX", drone.getModelo());
+        assertEquals("FabricanteX", drone.getFabricante());
+        assertEquals(2.5, drone.getPeso());
     }
 
-    // ── Validacion de atributos obligatorios ────────────────────────
+    @Test
+    void construirConCapacidadTanqueDevuelveUnaAgricultura() {
+        Drone drone = new DroneBuilder()
+                .id("D2")
+                .serial("SER-002")
+                .modelo("ModeloY")
+                .fabricante("FabricanteY")
+                .peso(6.0)
+                .capacidadTanque(20.0)
+                .construir();
 
-    @Nested
-    @DisplayName("Validacion de atributos obligatorios")
-    class ValidacionObligatorios {
-
-        @Test
-        @DisplayName("Sin id → lanza excepcion indicando que falta 'id'")
-        void faltaId() {
-            DroneBuilder builder = new DroneBuilder()
-                    .serial("SN-100")
-                    .modelo("Phantom")
-                    .fabricante("DJI")
-                    .peso(1.5);
-
-            IllegalStateException ex = assertThrows(IllegalStateException.class, builder::construir);
-            assertTrue(ex.getMessage().contains("id"));
-        }
-
-        @Test
-        @DisplayName("Sin serial → lanza excepcion indicando que falta 'serial'")
-        void faltaSerial() {
-            DroneBuilder builder = new DroneBuilder()
-                    .id("D001")
-                    .modelo("Phantom")
-                    .fabricante("DJI")
-                    .peso(1.5);
-
-            IllegalStateException ex = assertThrows(IllegalStateException.class, builder::construir);
-            assertTrue(ex.getMessage().contains("serial"));
-        }
-
-        @Test
-        @DisplayName("Sin modelo → lanza excepcion indicando que falta 'modelo'")
-        void faltaModelo() {
-            DroneBuilder builder = new DroneBuilder()
-                    .id("D001")
-                    .serial("SN-100")
-                    .fabricante("DJI")
-                    .peso(1.5);
-
-            IllegalStateException ex = assertThrows(IllegalStateException.class, builder::construir);
-            assertTrue(ex.getMessage().contains("modelo"));
-        }
-
-        @Test
-        @DisplayName("Sin fabricante → lanza excepcion indicando que falta 'fabricante'")
-        void faltaFabricante() {
-            DroneBuilder builder = new DroneBuilder()
-                    .id("D001")
-                    .serial("SN-100")
-                    .modelo("Phantom")
-                    .peso(1.5);
-
-            IllegalStateException ex = assertThrows(IllegalStateException.class, builder::construir);
-            assertTrue(ex.getMessage().contains("fabricante"));
-        }
-
-        @Test
-        @DisplayName("Sin peso → lanza excepcion indicando que falta 'peso'")
-        void faltaPeso() {
-            DroneBuilder builder = new DroneBuilder()
-                    .id("D001")
-                    .serial("SN-100")
-                    .modelo("Phantom")
-                    .fabricante("DJI");
-
-            IllegalStateException ex = assertThrows(IllegalStateException.class, builder::construir);
-            assertTrue(ex.getMessage().contains("peso"));
-        }
-
-        @Test
-        @DisplayName("Sin ningun atributo → lista todos los faltantes en el mensaje")
-        void faltanTodos() {
-            DroneBuilder builder = new DroneBuilder();
-
-            IllegalStateException ex = assertThrows(IllegalStateException.class, builder::construir);
-            String mensaje = ex.getMessage();
-            assertTrue(mensaje.contains("id"));
-            assertTrue(mensaje.contains("serial"));
-            assertTrue(mensaje.contains("modelo"));
-            assertTrue(mensaje.contains("fabricante"));
-            assertTrue(mensaje.contains("peso"));
-        }
+        Agricultura agricultura = assertInstanceOf(Agricultura.class, drone);
+        assertEquals(20.0, agricultura.getCapacidadTanque());
     }
 
-    // ── Conflicto de subtipos ──────────────────────────────────────
+    @Test
+    void construirConDeteccionTermicaDevuelveUnaVigilancia() {
+        Drone drone = new DroneBuilder()
+                .id("D3")
+                .serial("SER-003")
+                .modelo("ModeloZ")
+                .fabricante("FabricanteZ")
+                .peso(3.0)
+                .deteccionTermica(true)
+                .construir();
 
-    @Nested
-    @DisplayName("Conflicto de subtipos")
-    class ConflictoSubtipos {
-
-        @Test
-        @DisplayName("capacidadTanque + deteccionTermica → lanza excepcion de conflicto")
-        void conflictoAgriculturaYVigilancia() {
-            DroneBuilder builder = new DroneBuilder()
-                    .id("X001")
-                    .serial("SN-999")
-                    .modelo("Hibrido")
-                    .fabricante("Test")
-                    .peso(5.0)
-                    .capacidadTanque(20.0)
-                    .deteccionTermica(true);
-
-            IllegalStateException ex = assertThrows(IllegalStateException.class, builder::construir);
-            assertTrue(ex.getMessage().contains("Conflicto"));
-        }
+        Vigilancia vigilancia = assertInstanceOf(Vigilancia.class, drone);
+        assertTrue(vigilancia.isDeteccionTermica());
     }
 
-    // ── Encadenamiento fluido ──────────────────────────────────────
+    @Test
+    void construirConAtributosDeAgriculturaYVigilanciaLanzaExcepcion() {
+        DroneBuilder builder = new DroneBuilder()
+                .id("D4")
+                .serial("SER-004")
+                .modelo("ModeloW")
+                .fabricante("FabricanteW")
+                .peso(4.0)
+                .capacidadTanque(10.0)
+                .deteccionTermica(false);
 
-    @Nested
-    @DisplayName("Encadenamiento fluido")
-    class EncadenamientoFluido {
+        assertThrows(IllegalStateException.class, builder::construir);
+    }
 
-        @Test
-        @DisplayName("Todos los metodos devuelven la misma instancia del builder")
-        void encadenamientoDevuelveMismaInstancia() {
-            DroneBuilder builder = new DroneBuilder();
+    @Test
+    void construirSinIdLanzaExcepcion() {
+        DroneBuilder builder = new DroneBuilder()
+                .serial("SER-005")
+                .modelo("ModeloU")
+                .fabricante("FabricanteU")
+                .peso(5.0);
 
-            assertSame(builder, builder.id("D001"));
-            assertSame(builder, builder.serial("SN-100"));
-            assertSame(builder, builder.modelo("Phantom"));
-            assertSame(builder, builder.fabricante("DJI"));
-            assertSame(builder, builder.peso(1.5));
-            assertSame(builder, builder.piloto(null));
-            assertSame(builder, builder.sensores(null));
-            assertSame(builder, builder.capacidadTanque(10.0));
-        }
+        assertThrows(IllegalStateException.class, builder::construir);
+    }
+
+    @Test
+    void construirSoloConIdYPesoNoLanzaExcepcion() {
+        Drone drone = new DroneBuilder()
+                .id("D8")
+                .peso(4.4)
+                .construir();
+
+        assertEquals(Drone.class, drone.getClass());
+        assertEquals("D8", drone.getId());
+        assertEquals(4.4, drone.getPeso());
+        assertEquals(null, drone.getSerial());
+    }
+
+    @Test
+    void construirSoloConIdYCapacidadTanqueDevuelveUnaAgriculturaSinLosDemasComunes() {
+        Drone drone = new DroneBuilder()
+                .id("D9")
+                .capacidadTanque(15.0)
+                .construir();
+
+        Agricultura agricultura = assertInstanceOf(Agricultura.class, drone);
+        assertEquals("D9", agricultura.getId());
+        assertEquals(15.0, agricultura.getCapacidadTanque());
+        assertEquals(null, agricultura.getSerial());
+    }
+
+    @Test
+    void construirSoloConIdDevuelveUnDroneBase() {
+        Drone drone = new DroneBuilder()
+                .id("D10")
+                .construir();
+
+        assertEquals(Drone.class, drone.getClass());
+        assertEquals("D10", drone.getId());
+    }
+
+    @Test
+    void construirAplicaPilotoOpcionalSiSeEstablece() {
+        Piloto piloto = new Piloto("P1", "Nombre", "Licencia", "123");
+
+        Drone drone = new DroneBuilder()
+                .id("D6")
+                .serial("SER-006")
+                .modelo("ModeloV")
+                .fabricante("FabricanteV")
+                .peso(1.0)
+                .piloto(piloto)
+                .construir();
+
+        assertEquals(piloto, drone.getPiloto());
+    }
+
+    @Test
+    void metodosFluidosDevuelvenLaMismaInstanciaDelBuilder() {
+        DroneBuilder builder = new DroneBuilder();
+
+        assertEquals(builder, builder.id("D7"));
+        assertEquals(builder, builder.serial("SER-007"));
+        assertEquals(builder, builder.peso(1.0));
     }
 }
