@@ -40,7 +40,8 @@ public class DroneDAO implements CRUD<Drone> {
             "`serial` VARCHAR(100) NOT NULL, " +
             "modelo VARCHAR(100) NOT NULL, " +
             "fabricante VARCHAR(100) NOT NULL, " +
-            "peso DOUBLE NOT NULL)";
+            "peso DOUBLE NOT NULL, " +
+            "tipo_control VARCHAR(100) DEFAULT 'Control básico')";
 
     private static final String SQL_CREAR_TABLA_AGRICULTURA = "CREATE TABLE IF NOT EXISTS agricultura (" +
             "id_drone VARCHAR(100) PRIMARY KEY, " +
@@ -53,7 +54,7 @@ public class DroneDAO implements CRUD<Drone> {
             "FOREIGN KEY (id_drone) REFERENCES drone(id) ON DELETE CASCADE)";
 
     private static final String SQL_SELECT_BASE =
-            "SELECT d.id, d.`serial`, d.modelo, d.fabricante, d.peso, " +
+            "SELECT d.id, d.`serial`, d.modelo, d.fabricante, d.peso, d.tipo_control, " +
                     "a.capacidad_tanque, v.deteccion_termica " +
                     "FROM drone d " +
                     "LEFT JOIN agricultura a ON d.id = a.id_drone " +
@@ -80,12 +81,21 @@ public class DroneDAO implements CRUD<Drone> {
         crearTabla(connection, SQL_CREAR_TABLA_DRONE);
         crearTabla(connection, SQL_CREAR_TABLA_AGRICULTURA);
         crearTabla(connection, SQL_CREAR_TABLA_VIGILANCIA);
+        garantizarColumnaTipoControl(connection);
         return connection;
+    }
+
+    private void garantizarColumnaTipoControl(Connection connection) {
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate("ALTER TABLE drone ADD COLUMN tipo_control VARCHAR(100) DEFAULT 'Control básico'");
+        } catch (SQLException ignored) {
+            // La columna ya existe en la base de datos
+        }
     }
 
     @Override
     public boolean crear(Drone obj) throws SQLException, IOException {
-        String sql = "INSERT INTO drone (id, `serial`, modelo, fabricante, peso) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO drone (id, `serial`, modelo, fabricante, peso, tipo_control) VALUES (?, ?, ?, ?, ?, ?)";
 
         Connection connection = obtenerConexion();
         connection.setAutoCommit(false);
@@ -98,6 +108,7 @@ public class DroneDAO implements CRUD<Drone> {
                 statement.setString(3, obj.getModelo());
                 statement.setString(4, obj.getFabricante());
                 statement.setDouble(5, obj.getPeso());
+                statement.setString(6, obj.getTipoControl() != null ? obj.getTipoControl() : "Control básico");
                 statement.executeUpdate();
 
                 insertarEspecializacion(connection, obj);
@@ -170,7 +181,7 @@ public class DroneDAO implements CRUD<Drone> {
 
     @Override
     public boolean actualizar(Drone obj) throws SQLException, IOException {
-        String sql = "UPDATE drone SET `serial` = ?, modelo = ?, fabricante = ?, peso = ? WHERE id = ?";
+        String sql = "UPDATE drone SET `serial` = ?, modelo = ?, fabricante = ?, peso = ?, tipo_control = ? WHERE id = ?";
 
         Connection connection = obtenerConexion();
         connection.setAutoCommit(false);
@@ -183,7 +194,8 @@ public class DroneDAO implements CRUD<Drone> {
                 statement.setString(2, obj.getModelo());
                 statement.setString(3, obj.getFabricante());
                 statement.setDouble(4, obj.getPeso());
-                statement.setString(5, obj.getId());
+                statement.setString(5, obj.getTipoControl() != null ? obj.getTipoControl() : "Control básico");
+                statement.setString(6, obj.getId());
                 filasDrone = statement.executeUpdate();
             }
 
@@ -241,16 +253,29 @@ public class DroneDAO implements CRUD<Drone> {
         String fabricante = resultSet.getString("fabricante");
         double peso = resultSet.getDouble("peso");
 
+        String tipoControl = "Control básico";
+        try {
+            String val = resultSet.getString("tipo_control");
+            if (val != null && !val.isBlank()) {
+                tipoControl = val;
+            }
+        } catch (SQLException ignored) {
+        }
+
+        Drone drone;
         double capacidadTanque = resultSet.getDouble("capacidad_tanque");
         if (!resultSet.wasNull()) {
-            return new Agricultura(id, serial, modelo, fabricante, peso, capacidadTanque);
+            drone = new Agricultura(id, serial, modelo, fabricante, peso, capacidadTanque);
+        } else {
+            boolean deteccionTermica = resultSet.getBoolean("deteccion_termica");
+            if (!resultSet.wasNull()) {
+                drone = new Vigilancia(id, serial, modelo, fabricante, peso, deteccionTermica);
+            } else {
+                drone = new Drone(id, serial, modelo, fabricante, peso);
+            }
         }
 
-        boolean deteccionTermica = resultSet.getBoolean("deteccion_termica");
-        if (!resultSet.wasNull()) {
-            return new Vigilancia(id, serial, modelo, fabricante, peso, deteccionTermica);
-        }
-
-        return new Drone(id, serial, modelo, fabricante, peso);
+        drone.setTipoControl(tipoControl);
+        return drone;
     }
 }

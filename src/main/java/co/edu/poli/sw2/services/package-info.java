@@ -19,6 +19,13 @@
  *     construirlo, si corresponde una {@link co.edu.poli.sw2.model.Agricultura},
  *     una {@link co.edu.poli.sw2.model.Vigilancia} o un dron sin
  *     especializacion.</li>
+ *     <li>Patron Bridge: desacopla la jerarquia de controles
+ *     ({@link co.edu.poli.sw2.services.ControlDrone}, con sus abstracciones refinadas
+ *     {@link co.edu.poli.sw2.services.ControlBasico} y {@link co.edu.poli.sw2.services.ControlAutonomo})
+ *     de la jerarquia de drones administrados en el CRUD
+ *     ({@link co.edu.poli.sw2.model.Drone}, {@link co.edu.poli.sw2.model.Agricultura},
+ *     {@link co.edu.poli.sw2.model.Vigilancia}), permitiendo asociar e intercambiar
+ *     cualquier tipo de control sobre cualquier dron del sistema.</li>
  * </ul>
  */
 package co.edu.poli.sw2.services;

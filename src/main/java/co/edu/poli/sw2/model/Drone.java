@@ -23,14 +23,16 @@ public class Drone implements Cloneable {
     private String modelo;
     private String fabricante;
     private double peso;
+    private String tipoControl = "Control básico";
     private Piloto piloto;
     private List<Sensor> sensores;
 
     /**
-     * Crea un dron sin datos, con la lista de sensores vacia.
+     * Crea un dron sin datos, con la lista de sensores vacia y tipo de control basico.
      */
     public Drone() {
         this.sensores = new ArrayList<>();
+        this.tipoControl = "Control básico";
     }
 
     /**
@@ -178,6 +180,24 @@ public class Drone implements Cloneable {
     }
 
     /**
+     * Devuelve el tipo de control asignado al dron ("Control básico" o "Control autónomo").
+     *
+     * @return el tipo de control del dron.
+     */
+    public String getTipoControl() {
+        return tipoControl;
+    }
+
+    /**
+     * Asigna el tipo de control del dron.
+     *
+     * @param tipoControl tipo de control a asignar ("Control básico" o "Control autónomo").
+     */
+    public void setTipoControl(String tipoControl) {
+        this.tipoControl = tipoControl != null ? tipoControl : "Control básico";
+    }
+
+    /**
      * Crea una copia de este dron (patron Prototype). Los campos simples se
      * copian por valor y la lista de sensores se duplica para que el clon no
      * comparta su lista mutable con el original; el objeto devuelto tiene una
@@ -190,6 +210,7 @@ public class Drone implements Cloneable {
         try {
             Drone copia = (Drone) super.clone();
             copia.sensores = new ArrayList<>(this.sensores);
+            copia.tipoControl = this.tipoControl;
             return copia;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("Drone implementa Cloneable: no deberia fallar.", e);
@@ -204,6 +225,7 @@ public class Drone implements Cloneable {
                 ", modelo='" + modelo + '\'' +
                 ", fabricante='" + fabricante + '\'' +
                 ", peso=" + peso +
+                ", tipoControl='" + tipoControl + '\'' +
                 ", piloto=" + piloto +
                 ", sensores=" + sensores +
                 '}';

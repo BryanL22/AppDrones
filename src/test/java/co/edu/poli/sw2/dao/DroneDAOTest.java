@@ -91,6 +91,21 @@ class DroneDAOTest {
     }
 
     @Test
+    void persistirYRecuperarTipoControlAutonomo() throws Exception {
+        String idUnico = "TEST-" + UUID.randomUUID();
+        String serialUnico = "TEST-" + UUID.randomUUID();
+        Drone drone = new Drone(idUnico, serialUnico, "ModeloAuto", "Maker", 3.5);
+        drone.setTipoControl("Control autónomo");
+
+        assertTrue(droneDAO.crear(drone));
+        idCreado = idUnico;
+
+        Drone recuperado = droneDAO.obtenerPorId(idUnico);
+        assertNotNull(recuperado);
+        assertEquals("Control autónomo", recuperado.getTipoControl());
+    }
+
+    @Test
     void actualizarModificaLosDatosDelDroneExistente() throws Exception {
         Drone creado = crearDronePrueba();
 
