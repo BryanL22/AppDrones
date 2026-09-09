@@ -5,9 +5,12 @@ import co.edu.poli.sw2.model.Agricultura;
 import co.edu.poli.sw2.model.Drone;
 import co.edu.poli.sw2.model.Vigilancia;
 import co.edu.poli.sw2.services.AgriculturaFactory;
+import co.edu.poli.sw2.services.BateriaAdicional;
 import co.edu.poli.sw2.services.DroneBuilder;
 import co.edu.poli.sw2.services.DroneFactory;
+import co.edu.poli.sw2.services.DronComponent;
 import co.edu.poli.sw2.services.DronePrototype;
+import co.edu.poli.sw2.services.DronWrapper;
 import co.edu.poli.sw2.services.VigilanciaFactory;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -66,6 +69,8 @@ public class MainController {
     private Label lblIdentidadOriginal;
     @FXML
     private Label lblIdentidadClon;
+    @FXML
+    private CheckBox chkBateriaAdicional;
 
     @FXML
     private TableView<Drone> tablaDrones;
@@ -376,6 +381,38 @@ public class MainController {
         } catch (SQLException | IOException e) {
             mostrarAlerta(AlertType.ERROR, "Error de base de datos: " + e.getMessage());
         }
+    }
+
+    /**
+     * Toma el drone seleccionado en la tabla y arma la cadena del patron
+     * Decorator ({@link DronComponent} -&gt; {@link DronWrapper} ->
+     * {@link BateriaAdicional}) para mostrar, en un Alert, la descripcion y
+     * el peso del drone. Si {@link #chkBateriaAdicional} esta marcado, se le
+     * agrega la bateria adicional; si no, se muestra sin decorar.
+     */
+    @FXML
+    private void onDecorator(ActionEvent event) {
+        Drone seleccionado = tablaDrones.getSelectionModel().getSelectedItem();
+        if (seleccionado == null) {
+            mostrarAlerta(AlertType.WARNING, "Selecciona un drone de la tabla para ver el Decorator.");
+            return;
+        }
+
+        DronComponent componente = new DronComponent(seleccionado);
+        DronWrapper wrapper = new DronWrapper(componente);
+
+        String mensaje;
+        if (chkBateriaAdicional.isSelected()) {
+            BateriaAdicional conBateriaAdicional = new BateriaAdicional(wrapper);
+            mensaje = "Con Bateria Adicional (Decorator):\n" + conBateriaAdicional.describir()
+                    + "\nPeso: " + conBateriaAdicional.getPesoTotal() + " kg"
+                    + "\nAutonomia adicional: +" + conBateriaAdicional.getAutonomiaAdicionalMinutos() + " min";
+        } else {
+            mensaje = "Sin decorar:\n" + wrapper.describir()
+                    + "\nPeso: " + wrapper.getPesoTotal() + " kg";
+        }
+
+        mostrarAlerta(AlertType.INFORMATION, mensaje);
     }
 
     /**

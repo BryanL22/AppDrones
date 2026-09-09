@@ -19,6 +19,13 @@
  *     construirlo, si corresponde una {@link co.edu.poli.sw2.model.Agricultura},
  *     una {@link co.edu.poli.sw2.model.Vigilancia} o un dron sin
  *     especializacion.</li>
+ *     <li>{@link co.edu.poli.sw2.services.DronComponent}: Decorator que
+ *     envuelve un {@link co.edu.poli.sw2.model.Drone} por composicion;
+ *     {@link co.edu.poli.sw2.services.DronWrapper} lo envuelve a su vez, y
+ *     {@link co.edu.poli.sw2.services.BateriaAdicional} es el decorador
+ *     concreto que le agrega la caracteristica de una bateria adicional,
+ *     encadenando envoltorios via constructor sin necesitar una clase
+ *     abstracta intermedia.</li>
  * </ul>
  */
 package co.edu.poli.sw2.services;

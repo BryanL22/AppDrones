@@ -27,6 +27,10 @@
     -fx-background-color: #1d4ed8;
 }
 
+.check-box {
+    -fx-text-fill: white;
+}
+
 .identidad-label {
     -fx-font-family: "Consolas", "Courier New", monospace;
     -fx-font-size: 13px;
