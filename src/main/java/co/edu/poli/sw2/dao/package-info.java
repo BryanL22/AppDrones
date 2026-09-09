@@ -7,15 +7,11 @@
  * que tabla adicional leer, escribir o actualizar segun el tipo real del
  * objeto recibido.
  *
-<<<<<<< HEAD
- * <p>Todas usan JDBC, a traves de {@link co.edu.poli.sw2.services.Conexion},
-=======
  * <p>Sigue un patron de herencia por tabla: los campos comunes se guardan en
  * {@code drone} y los propios de cada especializacion en su propia tabla
  * ({@code agricultura} / {@code vigilancia}), relacionada con {@code drone}
  * mediante {@code id_drone} (con {@code ON DELETE CASCADE}). Usa JDBC, a
  * traves del servicio Singleton {@link co.edu.poli.sw2.services.Conexion},
->>>>>>> origin/bryan
  * para almacenar y recuperar las entidades del paquete
  * {@link co.edu.poli.sw2.model}.</p>
  *
