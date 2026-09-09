@@ -15,6 +15,13 @@ import java.io.IOException;
  */
 public class Main extends Application {
 
+    /**
+     * Crea la aplicacion. No recibe dependencias: JavaFX la instancia por
+     * reflexion al invocar {@link #launch(String...)}.
+     */
+    public Main() {
+    }
+
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("view/GestorDrones.fxml"));
@@ -30,6 +37,12 @@ public class Main extends Application {
         Conexion.obtenerInstancia().cerrar();
     }
 
+    /**
+     * Punto de entrada del ejecutable; delega en JavaFX el arranque de la
+     * aplicacion.
+     *
+     * @param args argumentos de linea de comandos (no se usan).
+     */
     public static void main(String[] args) {
         launch(args);
     }

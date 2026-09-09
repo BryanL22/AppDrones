@@ -35,6 +35,12 @@ import java.util.List;
  */
 public class DroneBuilder {
 
+    /**
+     * Crea un builder vacio, sin ningun atributo establecido todavia.
+     */
+    public DroneBuilder() {
+    }
+
     private String id;
     private String serial;
     private String modelo;

@@ -25,6 +25,21 @@ import java.util.List;
  * subclase, esta unica clase decide con {@code instanceof} que tabla
  * adicional leer, escribir o actualizar segun el tipo real del objeto.</p>
  *
+ * <p>Esta clase tambien garantiza la existencia de las tablas relacionadas
+ * del diagrama de clases que aun no tienen su propio DAO:</p>
+ * <ul>
+ *     <li>{@code piloto}: independiente; {@code drone} la referencia de
+ *     forma opcional mediante {@code id_piloto} (relacion 1 a 1,
+ *     {@code ON DELETE SET NULL} para no borrar el dron si se borra su
+ *     piloto).</li>
+ *     <li>{@code sensor}: cada fila pertenece a un unico dron mediante
+ *     {@code id_drone} (relacion de 1 dron a muchos sensores,
+ *     {@code ON DELETE CASCADE}).</li>
+ * </ul>
+ * <p>Por ahora solo se crean sus tablas (a nivel de base de datos); todavia
+ * no hay operaciones CRUD en Java para {@link co.edu.poli.sw2.model.Piloto}
+ * ni {@link co.edu.poli.sw2.model.Sensor}.</p>
+ *
  * <p>El identificador de cada dron lo asigna el usuario manualmente (no se
  * genera de forma automatica) y es la llave primaria de {@code drone}.</p>
  *
@@ -35,12 +50,20 @@ import java.util.List;
  */
 public class DroneDAO implements CRUD<Drone> {
 
+    private static final String SQL_CREAR_TABLA_PILOTO = "CREATE TABLE IF NOT EXISTS piloto (" +
+            "id VARCHAR(100) PRIMARY KEY, " +
+            "nombre VARCHAR(100) NOT NULL, " +
+            "licencia VARCHAR(100) NOT NULL, " +
+            "telefono VARCHAR(100) NOT NULL)";
+
     private static final String SQL_CREAR_TABLA_DRONE = "CREATE TABLE IF NOT EXISTS drone (" +
             "id VARCHAR(100) PRIMARY KEY, " +
             "`serial` VARCHAR(100) NOT NULL, " +
             "modelo VARCHAR(100) NOT NULL, " +
             "fabricante VARCHAR(100) NOT NULL, " +
-            "peso DOUBLE NOT NULL)";
+            "peso DOUBLE NOT NULL, " +
+            "id_piloto VARCHAR(100), " +
+            "FOREIGN KEY (id_piloto) REFERENCES piloto(id) ON DELETE SET NULL)";
 
     private static final String SQL_CREAR_TABLA_AGRICULTURA = "CREATE TABLE IF NOT EXISTS agricultura (" +
             "id_drone VARCHAR(100) PRIMARY KEY, " +
@@ -51,6 +74,21 @@ public class DroneDAO implements CRUD<Drone> {
             "id_drone VARCHAR(100) PRIMARY KEY, " +
             "deteccion_termica BOOLEAN NOT NULL, " +
             "FOREIGN KEY (id_drone) REFERENCES drone(id) ON DELETE CASCADE)";
+
+    private static final String SQL_CREAR_TABLA_SENSOR = "CREATE TABLE IF NOT EXISTS sensor (" +
+            "id VARCHAR(100) PRIMARY KEY, " +
+            "tipo VARCHAR(100) NOT NULL, " +
+            "fabricante VARCHAR(100) NOT NULL, " +
+            "id_drone VARCHAR(100) NOT NULL, " +
+            "FOREIGN KEY (id_drone) REFERENCES drone(id) ON DELETE CASCADE)";
+
+    private static final String SQL_VERIFICAR_COLUMNA_ID_PILOTO =
+            "SELECT COUNT(*) FROM information_schema.columns " +
+                    "WHERE table_schema = DATABASE() AND table_name = 'drone' AND column_name = 'id_piloto'";
+
+    private static final String SQL_AGREGAR_COLUMNA_ID_PILOTO =
+            "ALTER TABLE drone ADD COLUMN id_piloto VARCHAR(100), " +
+                    "ADD FOREIGN KEY (id_piloto) REFERENCES piloto(id) ON DELETE SET NULL";
 
     private static final String SQL_SELECT_BASE =
             "SELECT d.id, d.`serial`, d.modelo, d.fabricante, d.peso, " +
@@ -67,9 +105,12 @@ public class DroneDAO implements CRUD<Drone> {
     }
 
     /**
-     * Obtiene la conexion compartida (Singleton) y garantiza que las tres
-     * tablas existan. La conexion no se cierra aqui: la administra
-     * {@link Conexion} durante toda la vida de la aplicacion.
+     * Obtiene la conexion compartida (Singleton) y garantiza que todas las
+     * tablas existan, en un orden que respeta sus llaves foraneas: primero
+     * {@code piloto} (de la que depende {@code drone}), luego {@code drone},
+     * despues {@code agricultura}/{@code vigilancia} y {@code sensor} (que
+     * dependen de {@code drone}). La conexion no se cierra aqui: la
+     * administra {@link Conexion} durante toda la vida de la aplicacion.
      *
      * @return conexion JDBC lista para usar.
      * @throws SQLException si falla la conexion o la creacion de alguna tabla.
@@ -77,10 +118,36 @@ public class DroneDAO implements CRUD<Drone> {
      */
     private Connection obtenerConexion() throws SQLException, IOException {
         Connection connection = Conexion.obtenerInstancia().getConnection();
+        crearTabla(connection, SQL_CREAR_TABLA_PILOTO);
         crearTabla(connection, SQL_CREAR_TABLA_DRONE);
+        agregarColumnaIdPilotoSiFalta(connection);
         crearTabla(connection, SQL_CREAR_TABLA_AGRICULTURA);
         crearTabla(connection, SQL_CREAR_TABLA_VIGILANCIA);
+        crearTabla(connection, SQL_CREAR_TABLA_SENSOR);
         return connection;
+    }
+
+    /**
+     * Agrega la columna {@code id_piloto} (con su llave foranea hacia
+     * {@code piloto}) a una tabla {@code drone} que ya existia antes de que
+     * esa relacion se introdujera. {@code CREATE TABLE IF NOT EXISTS} no
+     * modifica una tabla que ya existe, asi que sin esta migracion quienes
+     * ya tuvieran la base de datos creada se quedarian con el esquema viejo.
+     *
+     * @param connection conexion JDBC activa sobre la cual verificar y, si
+     *                   hace falta, alterar la tabla.
+     * @throws SQLException si ocurre un error al consultar o alterar el esquema.
+     */
+    private void agregarColumnaIdPilotoSiFalta(Connection connection) throws SQLException {
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SQL_VERIFICAR_COLUMNA_ID_PILOTO)) {
+            resultSet.next();
+            if (resultSet.getInt(1) == 0) {
+                try (Statement alterStatement = connection.createStatement()) {
+                    alterStatement.executeUpdate(SQL_AGREGAR_COLUMNA_ID_PILOTO);
+                }
+            }
+        }
     }
 
     @Override
