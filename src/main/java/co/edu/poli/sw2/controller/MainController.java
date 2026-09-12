@@ -38,10 +38,12 @@ import java.sql.SQLException;
 /**
  * Controlador asociado a la vista principal (GestorDrones.fxml).
  *
- * <p>Siguiendo el patron MVC, esta clase solo lee/escribe los controles de
+ * <p>
+ * Siguiendo el patron MVC, esta clase solo lee/escribe los controles de
  * la vista y traduce las acciones del usuario en llamadas a {@link DroneDAO}.
  * No contiene SQL ni logica de acceso a datos: toda la persistencia vive en
- * la capa de modelo (paquetes {@code dao} y {@code database}).</p>
+ * la capa de modelo (paquetes {@code dao} y {@code database}).
+ * </p>
  */
 public class MainController {
 
@@ -109,7 +111,8 @@ public class MainController {
         colFabricante.setCellValueFactory(new PropertyValueFactory<>("fabricante"));
         colPeso.setCellValueFactory(new PropertyValueFactory<>("peso"));
         colCapacidadTanque.setCellValueFactory(datos -> new SimpleStringProperty(capacidadTanqueDe(datos.getValue())));
-        colDeteccionTermica.setCellValueFactory(datos -> new SimpleStringProperty(deteccionTermicaDe(datos.getValue())));
+        colDeteccionTermica
+                .setCellValueFactory(datos -> new SimpleStringProperty(deteccionTermicaDe(datos.getValue())));
 
         colCampoComparacion.setCellValueFactory(new PropertyValueFactory<>("campo"));
         colOriginalComparacion.setCellValueFactory(new PropertyValueFactory<>("original"));
@@ -296,8 +299,7 @@ public class MainController {
                 new FilaComparacion("Fabricante", original.getFabricante(), clon.getFabricante()),
                 new FilaComparacion("Peso (kg)", String.valueOf(original.getPeso()), String.valueOf(clon.getPeso())),
                 new FilaComparacion("Capacidad tanque (L)", capacidadTanqueDe(original), capacidadTanqueDe(clon)),
-                new FilaComparacion("Deteccion termica", deteccionTermicaDe(original), deteccionTermicaDe(clon))
-        ));
+                new FilaComparacion("Deteccion termica", deteccionTermicaDe(original), deteccionTermicaDe(clon))));
     }
 
     /**
@@ -402,7 +404,7 @@ public class MainController {
 
         String mensaje;
         if (chkBateriaAdicional.isSelected()) {
-            BateriaAdicional conBateriaAdicional = new BateriaAdicional(wrapper);
+            BateriaAdicional conBateriaAdicional = new BateriaAdicional(wrapper, 20.0);
             mensaje = "Con Bateria Adicional (Decorator):\n" + conBateriaAdicional.describir()
                     + "\nAutonomia adicional: +" + conBateriaAdicional.getAutonomiaAdicionalMinutos() + " min";
         } else {
@@ -430,7 +432,7 @@ public class MainController {
      * desde la vista el campo propio de la especializacion elegida.
      */
     private Drone construirDrone(String tipo, String id, String serial, String modelo, String fabricante,
-                                  double peso) {
+            double peso) {
         if (DroneFactory.TIPO_AGRICULTURA.equals(tipo)) {
             Double capacidadTanque = parsearCapacidadTanque();
             if (capacidadTanque == null) {
