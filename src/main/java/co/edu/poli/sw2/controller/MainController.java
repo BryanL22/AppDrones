@@ -7,7 +7,7 @@ import co.edu.poli.sw2.model.Vigilancia;
 import co.edu.poli.sw2.services.AgriculturaFactory;
 import co.edu.poli.sw2.services.ControlAutonomo;
 import co.edu.poli.sw2.services.ControlBasico;
-import co.edu.poli.sw2.services.ControlDrone;
+import co.edu.poli.sw2.services.ControlVuelo;
 import co.edu.poli.sw2.services.DroneBuilder;
 import co.edu.poli.sw2.services.DroneFactory;
 import co.edu.poli.sw2.services.DronePrototype;
@@ -36,15 +36,16 @@ import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 /**
  * Controlador asociado a la vista principal (GestorDrones.fxml).
  *
- * <p>Siguiendo el patron MVC, esta clase solo lee/escribe los controles de
+ * <p>
+ * Siguiendo el patron MVC, esta clase solo lee/escribe los controles de
  * la vista y traduce las acciones del usuario en llamadas a {@link DroneDAO}.
  * No contiene SQL ni logica de acceso a datos: toda la persistencia vive en
- * la capa de modelo (paquetes {@code dao} y {@code database}).</p>
+ * la capa de modelo (paquetes {@code dao} y {@code database}).
+ * </p>
  */
 public class MainController {
 
@@ -92,8 +93,6 @@ public class MainController {
     @FXML
     private TableColumn<Drone, Double> colPeso;
     @FXML
-    private TableColumn<Drone, String> colTipoControl;
-    @FXML
     private TableColumn<Drone, String> colCapacidadTanque;
     @FXML
     private TableColumn<Drone, String> colDeteccionTermica;
@@ -117,9 +116,9 @@ public class MainController {
         colModelo.setCellValueFactory(new PropertyValueFactory<>("modelo"));
         colFabricante.setCellValueFactory(new PropertyValueFactory<>("fabricante"));
         colPeso.setCellValueFactory(new PropertyValueFactory<>("peso"));
-        colTipoControl.setCellValueFactory(new PropertyValueFactory<>("tipoControl"));
         colCapacidadTanque.setCellValueFactory(datos -> new SimpleStringProperty(capacidadTanqueDe(datos.getValue())));
-        colDeteccionTermica.setCellValueFactory(datos -> new SimpleStringProperty(deteccionTermicaDe(datos.getValue())));
+        colDeteccionTermica
+                .setCellValueFactory(datos -> new SimpleStringProperty(deteccionTermicaDe(datos.getValue())));
 
         colCampoComparacion.setCellValueFactory(new PropertyValueFactory<>("campo"));
         colOriginalComparacion.setCellValueFactory(new PropertyValueFactory<>("original"));
@@ -181,7 +180,6 @@ public class MainController {
         if (drone == null) {
             return;
         }
-        drone.setTipoControl(getTipoControlSeleccionado());
 
         try {
             if (droneDAO.obtenerPorId(id) != null) {
@@ -258,7 +256,6 @@ public class MainController {
         if (drone == null) {
             return;
         }
-        drone.setTipoControl(getTipoControlSeleccionado());
 
         try {
             if (droneDAO.actualizar(drone)) {
@@ -318,10 +315,8 @@ public class MainController {
                 new FilaComparacion("Modelo", original.getModelo(), clon.getModelo()),
                 new FilaComparacion("Fabricante", original.getFabricante(), clon.getFabricante()),
                 new FilaComparacion("Peso (kg)", String.valueOf(original.getPeso()), String.valueOf(clon.getPeso())),
-                new FilaComparacion("Tipo control", original.getTipoControl(), clon.getTipoControl()),
                 new FilaComparacion("Capacidad tanque (L)", capacidadTanqueDe(original), capacidadTanqueDe(clon)),
-                new FilaComparacion("Deteccion termica", deteccionTermicaDe(original), deteccionTermicaDe(clon))
-        ));
+                new FilaComparacion("Deteccion termica", deteccionTermicaDe(original), deteccionTermicaDe(clon))));
     }
 
     /**
@@ -389,7 +384,6 @@ public class MainController {
                     .fabricante("GenericoSA")
                     .peso(peso)
                     .capacidadTanque(capacidadTanque)
-                    .tipoControl(getTipoControlSeleccionado())
                     .construir();
         } catch (IllegalStateException e) {
             mostrarAlerta(AlertType.ERROR, e.getMessage());
@@ -426,7 +420,7 @@ public class MainController {
      * desde la vista el campo propio de la especializacion elegida.
      */
     private Drone construirDrone(String tipo, String id, String serial, String modelo, String fabricante,
-                                  double peso) {
+            double peso) {
         if (DroneFactory.TIPO_AGRICULTURA.equals(tipo)) {
             Double capacidadTanque = parsearCapacidadTanque();
             if (capacidadTanque == null) {
@@ -490,11 +484,9 @@ public class MainController {
         txtFabricante.setText(drone.getFabricante());
         txtPeso.setText(String.valueOf(drone.getPeso()));
 
-        if (ControlAutonomo.NOMBRE.equalsIgnoreCase(drone.getTipoControl())) {
-            rbControlAutonomo.setSelected(true);
-        } else {
-            rbControlBasico.setSelected(true);
-        }
+        // El dron no almacena tipo de control (no es responsabilidad suya);
+        // el selector de control vuelve a su valor por defecto al cargar el formulario.
+        rbControlBasico.setSelected(true);
 
         if (drone instanceof Agricultura agricultura) {
             cbTipo.setValue(DroneFactory.TIPO_AGRICULTURA);
@@ -520,9 +512,12 @@ public class MainController {
     }
 
     /**
-     * Demuestra el patron Bridge conectando el tipo de control seleccionado
-     * (abstraccion {@link ControlBasico} o {@link ControlAutonomo}) con el
-     * dron correspondiente administrado en el CRUD.
+     * Demuestra el patron Bridge: el usuario selecciona el tipo de control
+     * (RadioButtons) y este metodo arma un {@link ControlVuelo} (la
+     * Abstraccion del puente) asociando ese control con el dron
+     * seleccionado, sin que el dron conozca ni almacene esa asociacion.
+     * El resultado que se muestra es, unicamente, el mensaje breve pedido
+     * por negocio: "Dron con control autónomo" o "Dron con control básico".
      */
     @FXML
     private void onEjecutarControl(ActionEvent event) {
@@ -545,29 +540,17 @@ public class MainController {
         }
 
         if (drone == null) {
-            mostrarAlerta(AlertType.WARNING, "Selecciona un drone de la tabla o completa el formulario para probar el control.");
+            mostrarAlerta(AlertType.WARNING,
+                    "Selecciona un drone de la tabla o completa el formulario para probar el control.");
             return;
         }
 
-        String tipoControl = getTipoControlSeleccionado();
-        drone.setTipoControl(tipoControl);
-
-        ControlDrone control = ControlDrone.crear(tipoControl, drone);
-        String resultado = control.ejecutarAccion();
-
-        StringBuilder mensaje = new StringBuilder();
-        mensaje.append("=== PATRÓN BRIDGE: CONTROL Y DRON DESACOPLADOS ===\n\n");
-        mensaje.append("• Abstracción de Control: ").append(control.getTipoControl())
-                .append(" (").append(control.getClass().getSimpleName()).append(")\n");
-        mensaje.append("• Dron asociado: ").append(drone.getModelo())
-                .append(" [ID: ").append(drone.getId()).append("]\n\n");
-        mensaje.append("• Resultado de la acción:\n").append(resultado);
+        ControlVuelo controlVuelo = ControlVuelo.crear(getTipoControlSeleccionado(), drone);
 
         Alert alerta = new Alert(AlertType.INFORMATION);
-        alerta.setTitle("Ejecución de Control (Patrón Bridge)");
-        alerta.setHeaderText("Control asignado: " + control.getTipoControl());
-        alerta.setContentText(mensaje.toString());
-        alerta.getDialogPane().setMinWidth(500);
+        alerta.setTitle("Control de vuelo");
+        alerta.setHeaderText(null);
+        alerta.setContentText(controlVuelo.descripcionBreve());
         alerta.showAndWait();
     }
 

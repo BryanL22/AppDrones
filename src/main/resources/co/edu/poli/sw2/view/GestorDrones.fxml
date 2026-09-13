@@ -104,7 +104,6 @@
                 <TableColumn fx:id="colModelo" text="Modelo" prefWidth="95"/>
                 <TableColumn fx:id="colFabricante" text="Fabricante" prefWidth="105"/>
                 <TableColumn fx:id="colPeso" text="Peso (kg)" prefWidth="70"/>
-                <TableColumn fx:id="colTipoControl" text="Control" prefWidth="115"/>
                 <TableColumn fx:id="colCapacidadTanque" text="Capacidad tanque (L)" prefWidth="150"/>
                 <TableColumn fx:id="colDeteccionTermica" text="Deteccion termica" prefWidth="130"/>
             </columns>

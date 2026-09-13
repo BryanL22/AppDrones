@@ -1,27 +1,20 @@
 package co.edu.poli.sw2.services;
 
-import co.edu.poli.sw2.model.Drone;
-
 /**
- * Abstracción refinada en el patrón Bridge que representa el "Control básico".
+ * Implementor concreto (ConcreteImplementor) del patrón Bridge que representa
+ * el "Control básico".
  *
- * <p>Modela el esquema de control manual y directo para los drones en el sistema.</p>
+ * <p>Modela el esquema de control manual y directo para los drones del
+ * sistema. No conoce ni referencia ningún {@link co.edu.poli.sw2.model.Drone}
+ * en particular: esa asociación la hace {@link ControlVuelo} (la
+ * Abstracción del puente) en tiempo de ejecución.</p>
  */
-public class ControlBasico extends ControlDrone {
+public class ControlBasico implements ControlDrone {
 
     /**
      * Nombre formal del tipo de control.
      */
     public static final String NOMBRE = "Control básico";
-
-    /**
-     * Crea una instancia de Control Básico asociada a un dron.
-     *
-     * @param drone el dron sobre el cual opera el control.
-     */
-    public ControlBasico(Drone drone) {
-        super(drone);
-    }
 
     @Override
     public String getTipoControl() {
@@ -30,7 +23,6 @@ public class ControlBasico extends ControlDrone {
 
     @Override
     public String ejecutarAccion() {
-        String infoDrone = drone != null ? drone.getModelo() + " (ID: " + drone.getId() + ")" : "Dron no asignado";
-        return "[Control Básico] Modo manual activo: el operador gestiona directamente el dron " + infoDrone + ".";
+        return "Modo manual activo: el operador gestiona directamente el dron.";
     }
 }

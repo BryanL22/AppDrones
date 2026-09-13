@@ -40,7 +40,6 @@ public class DroneBuilder {
     private String modelo;
     private String fabricante;
     private Double peso;
-    private String tipoControl;
     private Piloto piloto;
     private List<Sensor> sensores;
 
@@ -121,17 +120,6 @@ public class DroneBuilder {
      */
     public DroneBuilder sensores(List<Sensor> sensores) {
         this.sensores = sensores;
-        return this;
-    }
-
-    /**
-     * Establece el tipo de control asignado al dron ("Control básico" o "Control autónomo").
-     *
-     * @param tipoControl tipo de control a asignar.
-     * @return este builder, para encadenar mas llamadas.
-     */
-    public DroneBuilder tipoControl(String tipoControl) {
-        this.tipoControl = tipoControl;
         return this;
     }
 
@@ -217,9 +205,6 @@ public class DroneBuilder {
         }
         if (sensores != null) {
             drone.setSensores(sensores);
-        }
-        if (tipoControl != null) {
-            drone.setTipoControl(tipoControl);
         }
 
         return drone;
