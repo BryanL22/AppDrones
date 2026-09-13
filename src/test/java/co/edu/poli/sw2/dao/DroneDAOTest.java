@@ -6,6 +6,7 @@ import co.edu.poli.sw2.model.Vigilancia;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -64,12 +66,12 @@ class DroneDAOTest {
     }
 
     @Test
-    void crearFallaSiElIdYaExiste() throws Exception {
+    void crearLanzaExcepcionSiElIdYaExiste() throws Exception {
         Drone creado = crearDronePrueba();
 
         Drone duplicado = new Drone(creado.getId(), "OTRO-SERIAL", "OtroModelo", "OtroFabricante", 1.0);
 
-        assertFalse(droneDAO.crear(duplicado));
+        assertThrows(SQLException.class, () -> droneDAO.crear(duplicado));
     }
 
     @Test

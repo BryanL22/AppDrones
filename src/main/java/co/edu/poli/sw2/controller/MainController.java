@@ -96,6 +96,13 @@ public class MainController {
     private final DroneDAO droneDAO = new DroneDAO();
     private final ObservableList<Drone> drones = FXCollections.observableArrayList();
 
+    /**
+     * Crea el controlador. No recibe dependencias: {@link javafx.fxml.FXMLLoader}
+     * lo instancia por reflexion al cargar {@code GestorDrones.fxml}.
+     */
+    public MainController() {
+    }
+
     @FXML
     private void initialize() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -543,14 +550,29 @@ public class MainController {
             this.clon = clon;
         }
 
+        /**
+         * Devuelve el nombre del campo comparado (por ejemplo, "ID" o "Peso (kg)").
+         *
+         * @return el nombre del campo.
+         */
         public String getCampo() {
             return campo;
         }
 
+        /**
+         * Devuelve el valor de este campo en el drone original.
+         *
+         * @return el valor en el original.
+         */
         public String getOriginal() {
             return original;
         }
 
+        /**
+         * Devuelve el valor de este campo en el drone clonado.
+         *
+         * @return el valor en el clon.
+         */
         public String getClon() {
             return clon;
         }

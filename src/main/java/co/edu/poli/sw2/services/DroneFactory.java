@@ -18,6 +18,13 @@ import java.util.List;
  */
 public abstract class DroneFactory {
 
+    /**
+     * Constructor por defecto, invocado implicitamente por las subclases
+     * concretas ({@link AgriculturaFactory}, {@link VigilanciaFactory}).
+     */
+    protected DroneFactory() {
+    }
+
     /** Texto que identifica el tipo de especializacion Agricultura. */
     public static final String TIPO_AGRICULTURA = "Agricultura";
 
