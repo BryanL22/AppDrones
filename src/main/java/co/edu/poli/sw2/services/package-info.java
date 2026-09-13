@@ -31,6 +31,16 @@
  *     {@code DronComponent} generico puede encadenarse sobre el drone base
  *     o sobre otro decorador ya aplicado (incluida otra bateria), sin
  *     necesitar una clase abstracta intermedia.</li>
+ *     <li>Patron Bridge: desacopla la jerarquia de modalidades de control
+ *     ({@link co.edu.poli.sw2.services.ControlDrone}, el Implementor, con sus
+ *     implementaciones concretas {@link co.edu.poli.sw2.services.ControlBasico}
+ *     y {@link co.edu.poli.sw2.services.ControlAutonomo}) de la Abstraccion que
+ *     las usa ({@link co.edu.poli.sw2.services.ControlVuelo}), la cual asocia en
+ *     tiempo de ejecucion cualquier tipo de control con cualquier dron
+ *     administrado en el CRUD ({@link co.edu.poli.sw2.model.Drone},
+ *     {@link co.edu.poli.sw2.model.Agricultura}, {@link co.edu.poli.sw2.model.Vigilancia}),
+ *     sin que esa asociacion se persista ni sea responsabilidad de
+ *     {@link co.edu.poli.sw2.model.Drone}.</li>
  * </ul>
  */
 package co.edu.poli.sw2.services;

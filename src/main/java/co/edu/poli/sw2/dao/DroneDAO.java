@@ -153,6 +153,7 @@ public class DroneDAO implements CRUD<Drone> {
         crearTabla(connection, SQL_CREAR_TABLA_SENSOR);
         crearTabla(connection, SQL_CREAR_TABLA_MISION);
         crearTabla(connection, SQL_CREAR_TABLA_MISION_DRONE);
+        eliminarColumnaTipoControlSiExiste(connection);
         return connection;
     }
 
@@ -176,6 +177,21 @@ public class DroneDAO implements CRUD<Drone> {
                     alterStatement.executeUpdate(SQL_AGREGAR_COLUMNA_ID_PILOTO);
                 }
             }
+        }
+    }
+
+    /**
+     * Elimina la columna {@code tipo_control} de la tabla {@code drone} si
+     * quedo de una version anterior del esquema. El tipo de control ya no es
+     * un atributo de {@link Drone} (esa responsabilidad es del patron
+     * Bridge, ver {@link co.edu.poli.sw2.services.ControlVuelo}), por lo que
+     * no debe persistirse en base de datos.
+     */
+    private void eliminarColumnaTipoControlSiExiste(Connection connection) {
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate("ALTER TABLE drone DROP COLUMN tipo_control");
+        } catch (SQLException ignored) {
+            // La columna ya no existe (o nunca existio) en la base de datos.
         }
     }
 
@@ -337,16 +353,19 @@ public class DroneDAO implements CRUD<Drone> {
         String fabricante = resultSet.getString("fabricante");
         double peso = resultSet.getDouble("peso");
 
+        Drone drone;
         double capacidadTanque = resultSet.getDouble("capacidad_tanque");
         if (!resultSet.wasNull()) {
-            return new Agricultura(id, serial, modelo, fabricante, peso, capacidadTanque);
+            drone = new Agricultura(id, serial, modelo, fabricante, peso, capacidadTanque);
+        } else {
+            boolean deteccionTermica = resultSet.getBoolean("deteccion_termica");
+            if (!resultSet.wasNull()) {
+                drone = new Vigilancia(id, serial, modelo, fabricante, peso, deteccionTermica);
+            } else {
+                drone = new Drone(id, serial, modelo, fabricante, peso);
+            }
         }
 
-        boolean deteccionTermica = resultSet.getBoolean("deteccion_termica");
-        if (!resultSet.wasNull()) {
-            return new Vigilancia(id, serial, modelo, fabricante, peso, deteccionTermica);
-        }
-
-        return new Drone(id, serial, modelo, fabricante, peso);
+        return drone;
     }
 }

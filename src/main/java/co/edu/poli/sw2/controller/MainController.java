@@ -6,6 +6,9 @@ import co.edu.poli.sw2.model.Drone;
 import co.edu.poli.sw2.model.Vigilancia;
 import co.edu.poli.sw2.services.AgriculturaFactory;
 import co.edu.poli.sw2.services.BateriaAdicional;
+import co.edu.poli.sw2.services.ControlAutonomo;
+import co.edu.poli.sw2.services.ControlBasico;
+import co.edu.poli.sw2.services.ControlVuelo;
 import co.edu.poli.sw2.services.DroneBuilder;
 import co.edu.poli.sw2.services.DroneFactory;
 import co.edu.poli.sw2.services.DronComponent;
@@ -26,9 +29,11 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 
@@ -67,6 +72,12 @@ public class MainController {
     private Label lblDeteccionTermica;
     @FXML
     private CheckBox chkDeteccionTermica;
+    @FXML
+    private RadioButton rbControlBasico;
+    @FXML
+    private RadioButton rbControlAutonomo;
+    @FXML
+    private ToggleGroup grupoControl;
     @FXML
     private Label lblIdentidadOriginal;
     @FXML
@@ -138,6 +149,17 @@ public class MainController {
                 });
 
         cargarDrones();
+    }
+
+    /**
+     * Devuelve el tipo de control seleccionado actualmente en los RadioButtons.
+     *
+     * @return "Control autónomo" o "Control básico".
+     */
+    private String getTipoControlSeleccionado() {
+        return rbControlAutonomo != null && rbControlAutonomo.isSelected()
+                ? ControlAutonomo.NOMBRE
+                : ControlBasico.NOMBRE;
     }
 
     @FXML
@@ -503,6 +525,10 @@ public class MainController {
         txtFabricante.setText(drone.getFabricante());
         txtPeso.setText(String.valueOf(drone.getPeso()));
 
+        // El dron no almacena tipo de control (no es responsabilidad suya);
+        // el selector de control vuelve a su valor por defecto al cargar el formulario.
+        rbControlBasico.setSelected(true);
+
         if (drone instanceof Agricultura agricultura) {
             cbTipo.setValue(DroneFactory.TIPO_AGRICULTURA);
             txtCapacidadTanque.setText(String.valueOf(agricultura.getCapacidadTanque()));
@@ -523,6 +549,50 @@ public class MainController {
         txtCapacidadTanque.clear();
         chkDeteccionTermica.setSelected(false);
         cbTipo.setValue(null);
+        rbControlBasico.setSelected(true);
+    }
+
+    /**
+     * Demuestra el patron Bridge: el usuario selecciona el tipo de control
+     * (RadioButtons) y este metodo arma un {@link ControlVuelo} (la
+     * Abstraccion del puente) asociando ese control con el dron
+     * seleccionado, sin que el dron conozca ni almacene esa asociacion.
+     * El resultado que se muestra es, unicamente, el mensaje breve pedido
+     * por negocio: "Dron con control autónomo" o "Dron con control básico".
+     */
+    @FXML
+    private void onEjecutarControl(ActionEvent event) {
+        Drone drone = tablaDrones.getSelectionModel().getSelectedItem();
+        if (drone == null) {
+            String id = txtId.getText();
+            String serial = txtSerial.getText();
+            String modelo = txtModelo.getText();
+            String fabricante = txtFabricante.getText();
+            String pesoTexto = txtPeso.getText();
+            String tipo = cbTipo.getValue();
+
+            if (!esVacio(id) && !esVacio(serial) && !esVacio(modelo) && !esVacio(fabricante)
+                    && !esVacio(pesoTexto) && !esVacio(tipo)) {
+                Double peso = parsearPeso(pesoTexto);
+                if (peso != null) {
+                    drone = construirDrone(tipo, id.trim(), serial, modelo, fabricante, peso);
+                }
+            }
+        }
+
+        if (drone == null) {
+            mostrarAlerta(AlertType.WARNING,
+                    "Selecciona un drone de la tabla o completa el formulario para probar el control.");
+            return;
+        }
+
+        ControlVuelo controlVuelo = ControlVuelo.crear(getTipoControlSeleccionado(), drone);
+
+        Alert alerta = new Alert(AlertType.INFORMATION);
+        alerta.setTitle("Control de vuelo");
+        alerta.setHeaderText(null);
+        alerta.setContentText(controlVuelo.descripcionBreve());
+        alerta.showAndWait();
     }
 
     private boolean esVacio(String texto) {

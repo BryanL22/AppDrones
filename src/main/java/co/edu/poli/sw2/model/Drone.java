@@ -15,6 +15,13 @@ import java.util.List;
  * del original) sin depender de sus constructores ni conocer su tipo
  * concreto. El punto de entrada para el resto de la aplicacion es
  * {@link co.edu.poli.sw2.services.DronePrototype}.</p>
+ *
+ * <p>Esta clase no tiene ninguna responsabilidad del patron Bridge: no
+ * almacena ni conoce el tipo de control de vuelo asignado. El control
+ * (basico o autonomo) se selecciona y aplica en tiempo de ejecucion desde
+ * {@link co.edu.poli.sw2.services.ControlVuelo} (la Abstraccion del Bridge),
+ * que referencia al dron unicamente mientras se ejecuta la accion de
+ * control, sin que esa asociacion se persista en base de datos.</p>
  */
 public class Drone implements Cloneable {
 
