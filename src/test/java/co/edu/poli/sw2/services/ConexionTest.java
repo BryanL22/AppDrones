@@ -2,6 +2,8 @@ package co.edu.poli.sw2.services;
 
 import org.junit.jupiter.api.Test;
 
+import co.edu.poli.sw2.services.Conexion;
+
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;

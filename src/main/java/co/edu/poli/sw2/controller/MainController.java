@@ -5,9 +5,12 @@ import co.edu.poli.sw2.model.Agricultura;
 import co.edu.poli.sw2.model.Drone;
 import co.edu.poli.sw2.model.Vigilancia;
 import co.edu.poli.sw2.services.AgriculturaFactory;
+import co.edu.poli.sw2.services.BateriaAdicional;
 import co.edu.poli.sw2.services.DroneBuilder;
 import co.edu.poli.sw2.services.DroneFactory;
+import co.edu.poli.sw2.services.DronComponent;
 import co.edu.poli.sw2.services.DronePrototype;
+import co.edu.poli.sw2.services.DronWrapper;
 import co.edu.poli.sw2.services.VigilanciaFactory;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -35,10 +38,12 @@ import java.sql.SQLException;
 /**
  * Controlador asociado a la vista principal (GestorDrones.fxml).
  *
- * <p>Siguiendo el patron MVC, esta clase solo lee/escribe los controles de
+ * <p>
+ * Siguiendo el patron MVC, esta clase solo lee/escribe los controles de
  * la vista y traduce las acciones del usuario en llamadas a {@link DroneDAO}.
  * No contiene SQL ni logica de acceso a datos: toda la persistencia vive en
- * la capa de modelo (paquetes {@code dao} y {@code database}).</p>
+ * la capa de modelo (paquetes {@code dao} y {@code database}).
+ * </p>
  */
 public class MainController {
 
@@ -66,6 +71,8 @@ public class MainController {
     private Label lblIdentidadOriginal;
     @FXML
     private Label lblIdentidadClon;
+    @FXML
+    private CheckBox chkBateriaAdicional;
 
     @FXML
     private TableView<Drone> tablaDrones;
@@ -111,7 +118,8 @@ public class MainController {
         colFabricante.setCellValueFactory(new PropertyValueFactory<>("fabricante"));
         colPeso.setCellValueFactory(new PropertyValueFactory<>("peso"));
         colCapacidadTanque.setCellValueFactory(datos -> new SimpleStringProperty(capacidadTanqueDe(datos.getValue())));
-        colDeteccionTermica.setCellValueFactory(datos -> new SimpleStringProperty(deteccionTermicaDe(datos.getValue())));
+        colDeteccionTermica
+                .setCellValueFactory(datos -> new SimpleStringProperty(deteccionTermicaDe(datos.getValue())));
 
         colCampoComparacion.setCellValueFactory(new PropertyValueFactory<>("campo"));
         colOriginalComparacion.setCellValueFactory(new PropertyValueFactory<>("original"));
@@ -298,8 +306,7 @@ public class MainController {
                 new FilaComparacion("Fabricante", original.getFabricante(), clon.getFabricante()),
                 new FilaComparacion("Peso (kg)", String.valueOf(original.getPeso()), String.valueOf(clon.getPeso())),
                 new FilaComparacion("Capacidad tanque (L)", capacidadTanqueDe(original), capacidadTanqueDe(clon)),
-                new FilaComparacion("Deteccion termica", deteccionTermicaDe(original), deteccionTermicaDe(clon))
-        ));
+                new FilaComparacion("Deteccion termica", deteccionTermicaDe(original), deteccionTermicaDe(clon))));
     }
 
     /**
@@ -386,6 +393,35 @@ public class MainController {
     }
 
     /**
+     * Toma el drone seleccionado en la tabla y arma la cadena del patron
+     * Decorator ({@link DronWrapper} -&gt; {@link BateriaAdicional}, ambos
+     * implementando {@link DronComponent}) para mostrar, en un Alert, la
+     * descripcion del drone. Si {@link #chkBateriaAdicional} esta marcado,
+     * se le agrega la bateria adicional; si no, se muestra sin decorar.
+     */
+    @FXML
+    private void onDecorator(ActionEvent event) {
+        Drone seleccionado = tablaDrones.getSelectionModel().getSelectedItem();
+        if (seleccionado == null) {
+            mostrarAlerta(AlertType.WARNING, "Selecciona un drone de la tabla para ver el Decorator.");
+            return;
+        }
+
+        DronWrapper wrapper = new DronWrapper(seleccionado);
+
+        String mensaje;
+        if (chkBateriaAdicional.isSelected()) {
+            BateriaAdicional conBateriaAdicional = new BateriaAdicional(wrapper, 20.0);
+            mensaje = "Con Bateria Adicional (Decorator):\n" + conBateriaAdicional.describir()
+                    + "\nAutonomia adicional: +" + conBateriaAdicional.getAutonomiaAdicionalMinutos() + " min";
+        } else {
+            mensaje = "Sin decorar:\n" + wrapper.describir();
+        }
+
+        mostrarAlerta(AlertType.INFORMATION, mensaje);
+    }
+
+    /**
      * Representa la identidad de un objeto en memoria, con el mismo formato
      * que usa {@link Object#toString()} por defecto ({@code Clase@hash}),
      * util para comprobar visualmente que dos referencias no apuntan a la
@@ -403,7 +439,7 @@ public class MainController {
      * desde la vista el campo propio de la especializacion elegida.
      */
     private Drone construirDrone(String tipo, String id, String serial, String modelo, String fabricante,
-                                  double peso) {
+            double peso) {
         if (DroneFactory.TIPO_AGRICULTURA.equals(tipo)) {
             Double capacidadTanque = parsearCapacidadTanque();
             if (capacidadTanque == null) {
