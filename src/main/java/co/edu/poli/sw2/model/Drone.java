@@ -18,10 +18,10 @@ import java.util.List;
  *
  * <p>Esta clase no tiene ninguna responsabilidad del patron Bridge: no
  * almacena ni conoce el tipo de control de vuelo asignado. El control
- * (basico o autonomo) se selecciona y aplica en tiempo de ejecucion desde
- * {@link co.edu.poli.sw2.services.ControlVuelo} (la Abstraccion del Bridge),
- * que referencia al dron unicamente mientras se ejecuta la accion de
- * control, sin que esa asociacion se persista en base de datos.</p>
+ * (basico o autonomo) se selecciona y aplica en tiempo de ejecucion a traves
+ * de {@link co.edu.poli.sw2.services.ControlDrone#ejecutarAccion(Drone)},
+ * que recibe al dron como parametro de metodo (relacion de dependencia en UML),
+ * sin que esa asociacion se persista en base de datos ni en sus atributos.</p>
  */
 public class Drone implements Cloneable {
 

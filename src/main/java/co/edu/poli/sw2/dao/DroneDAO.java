@@ -88,7 +88,7 @@ public class DroneDAO implements CRUD<Drone> {
      * Elimina la columna {@code tipo_control} de la tabla {@code drone} si
      * quedo de una version anterior del esquema. El tipo de control ya no es
      * un atributo de {@link Drone} (esa responsabilidad es del patron
-     * Bridge, ver {@link co.edu.poli.sw2.services.ControlVuelo}), por lo que
+     * Bridge, ver {@link co.edu.poli.sw2.services.ControlDrone}), por lo que
      * no debe persistirse en base de datos.
      */
     private void eliminarColumnaTipoControlSiExiste(Connection connection) {
@@ -122,6 +122,8 @@ public class DroneDAO implements CRUD<Drone> {
             connection.commit();
             exito = true;
             return true;
+        } catch (SQLException e) {
+            return false;
         } finally {
             if (!exito) {
                 connection.rollback();

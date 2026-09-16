@@ -1,13 +1,14 @@
 package co.edu.poli.sw2.services;
 
+import co.edu.poli.sw2.model.Drone;
+
 /**
- * Implementor concreto (ConcreteImplementor) del patrón Bridge que representa
- * el "Control básico".
+ * Implementación concreta del patrón Bridge que representa el "Control básico".
  *
  * <p>Modela el esquema de control manual y directo para los drones del
- * sistema. No conoce ni referencia ningún {@link co.edu.poli.sw2.model.Drone}
- * en particular: esa asociación la hace {@link ControlVuelo} (la
- * Abstracción del puente) en tiempo de ejecución.</p>
+ * sistema. Recibe el {@link Drone} como parámetro durante la llamada a
+ * {@link #ejecutarAccion(Drone)} (relación de dependencia en UML), sin
+ * almacenar ninguna referencia en sus atributos.</p>
  */
 public class ControlBasico implements ControlDrone {
 
@@ -22,7 +23,10 @@ public class ControlBasico implements ControlDrone {
     }
 
     @Override
-    public String ejecutarAccion() {
-        return "Modo manual activo: el operador gestiona directamente el dron.";
+    public String ejecutarAccion(Drone drone) {
+        String infoDrone = drone != null
+                ? drone.getModelo() + " (ID: " + drone.getId() + ")"
+                : "Dron no asignado";
+        return "[" + NOMBRE + "] Modo manual activo: el operador gestiona directamente el dron " + infoDrone + ".";
     }
 }

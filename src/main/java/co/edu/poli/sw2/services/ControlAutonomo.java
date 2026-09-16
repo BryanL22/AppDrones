@@ -1,13 +1,14 @@
 package co.edu.poli.sw2.services;
 
+import co.edu.poli.sw2.model.Drone;
+
 /**
- * Implementor concreto (ConcreteImplementor) del patrón Bridge que representa
- * el "Control autónomo".
+ * Implementación concreta del patrón Bridge que representa el "Control autónomo".
  *
  * <p>Modela el esquema de control automatizado y programado para los drones
- * del sistema. No conoce ni referencia ningún {@link co.edu.poli.sw2.model.Drone}
- * en particular: esa asociación la hace {@link ControlVuelo} (la
- * Abstracción del puente) en tiempo de ejecución.</p>
+ * del sistema. Recibe el {@link Drone} como parámetro durante la llamada a
+ * {@link #ejecutarAccion(Drone)} (relación de dependencia en UML), sin
+ * almacenar ninguna referencia en sus atributos.</p>
  */
 public class ControlAutonomo implements ControlDrone {
 
@@ -22,7 +23,10 @@ public class ControlAutonomo implements ControlDrone {
     }
 
     @Override
-    public String ejecutarAccion() {
-        return "Modo autopiloto activo: el sistema ejecuta la misión de forma autónoma.";
+    public String ejecutarAccion(Drone drone) {
+        String infoDrone = drone != null
+                ? drone.getModelo() + " (ID: " + drone.getId() + ")"
+                : "Dron no asignado";
+        return "[" + NOMBRE + "] Modo autopiloto activo: el sistema ejecuta la misión de forma autónoma para " + infoDrone + ".";
     }
 }

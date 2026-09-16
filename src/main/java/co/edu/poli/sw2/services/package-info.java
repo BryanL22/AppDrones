@@ -19,16 +19,16 @@
  *     construirlo, si corresponde una {@link co.edu.poli.sw2.model.Agricultura},
  *     una {@link co.edu.poli.sw2.model.Vigilancia} o un dron sin
  *     especializacion.</li>
- *     <li>Patron Bridge: desacopla la jerarquia de modalidades de control
- *     ({@link co.edu.poli.sw2.services.ControlDrone}, el Implementor, con sus
- *     implementaciones concretas {@link co.edu.poli.sw2.services.ControlBasico}
- *     y {@link co.edu.poli.sw2.services.ControlAutonomo}) de la Abstraccion que
- *     las usa ({@link co.edu.poli.sw2.services.ControlVuelo}), la cual asocia en
- *     tiempo de ejecucion cualquier tipo de control con cualquier dron
- *     administrado en el CRUD ({@link co.edu.poli.sw2.model.Drone},
- *     {@link co.edu.poli.sw2.model.Agricultura}, {@link co.edu.poli.sw2.model.Vigilancia}),
- *     sin que esa asociacion se persista ni sea responsabilidad de
- *     {@link co.edu.poli.sw2.model.Drone}.</li>
+ *     <li>Patron Bridge: desacopla las modalidades de control
+ *     ({@link co.edu.poli.sw2.services.ControlDrone}, con sus implementaciones
+ *     concretas {@link co.edu.poli.sw2.services.ControlBasico} y
+ *     {@link co.edu.poli.sw2.services.ControlAutonomo}) de los drones administrados
+ *     en el CRUD ({@link co.edu.poli.sw2.model.Drone}, {@link co.edu.poli.sw2.model.Agricultura},
+ *     {@link co.edu.poli.sw2.model.Vigilancia}). El control se relaciona con el
+ *     dron mediante una dependencia en tiempo de ejecucion (recibiendo el objeto
+ *     {@link co.edu.poli.sw2.model.Drone} como parametro en
+ *     {@link co.edu.poli.sw2.services.ControlDrone#ejecutarAccion(co.edu.poli.sw2.model.Drone)}),
+ *     sin persistencia ni acoplamiento estructural en el modelo.</li>
  * </ul>
  */
 package co.edu.poli.sw2.services;

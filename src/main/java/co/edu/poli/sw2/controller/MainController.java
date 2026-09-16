@@ -7,7 +7,7 @@ import co.edu.poli.sw2.model.Vigilancia;
 import co.edu.poli.sw2.services.AgriculturaFactory;
 import co.edu.poli.sw2.services.ControlAutonomo;
 import co.edu.poli.sw2.services.ControlBasico;
-import co.edu.poli.sw2.services.ControlVuelo;
+import co.edu.poli.sw2.services.ControlDrone;
 import co.edu.poli.sw2.services.DroneBuilder;
 import co.edu.poli.sw2.services.DroneFactory;
 import co.edu.poli.sw2.services.DronePrototype;
@@ -513,9 +513,10 @@ public class MainController {
 
     /**
      * Demuestra el patron Bridge: el usuario selecciona el tipo de control
-     * (RadioButtons) y este metodo arma un {@link ControlVuelo} (la
-     * Abstraccion del puente) asociando ese control con el dron
-     * seleccionado, sin que el dron conozca ni almacene esa asociacion.
+     * (RadioButtons) y este metodo crea el {@link ControlDrone} correspondiente
+     * ejecutando la accion sobre el dron seleccionado (relacion de dependencia
+     * temporal mediante parametro de metodo), sin que ninguna de las dos clases
+     * almacene referencias persistentes de la otra.
      * El resultado que se muestra es, unicamente, el mensaje breve pedido
      * por negocio: "Dron con control autónomo" o "Dron con control básico".
      */
@@ -545,12 +546,13 @@ public class MainController {
             return;
         }
 
-        ControlVuelo controlVuelo = ControlVuelo.crear(getTipoControlSeleccionado(), drone);
+        ControlDrone control = ControlDrone.crear(getTipoControlSeleccionado());
+        control.ejecutarAccion(drone);
 
         Alert alerta = new Alert(AlertType.INFORMATION);
         alerta.setTitle("Control de vuelo");
         alerta.setHeaderText(null);
-        alerta.setContentText(controlVuelo.descripcionBreve());
+        alerta.setContentText(control.descripcionBreve());
         alerta.showAndWait();
     }
 
