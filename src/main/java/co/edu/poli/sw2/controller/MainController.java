@@ -3,9 +3,11 @@ package co.edu.poli.sw2.controller;
 import co.edu.poli.sw2.dao.DroneDAO;
 import co.edu.poli.sw2.model.Agricultura;
 import co.edu.poli.sw2.model.Drone;
+import co.edu.poli.sw2.model.Sensor;
 import co.edu.poli.sw2.model.Vigilancia;
 import co.edu.poli.sw2.services.AgriculturaFactory;
 import co.edu.poli.sw2.services.BateriaAdicional;
+import co.edu.poli.sw2.services.Composite;
 import co.edu.poli.sw2.services.ControlAutonomo;
 import co.edu.poli.sw2.services.ControlBasico;
 import co.edu.poli.sw2.services.ControlVuelo;
@@ -15,6 +17,7 @@ import co.edu.poli.sw2.services.DronComponent;
 import co.edu.poli.sw2.services.DronePrototype;
 import co.edu.poli.sw2.services.DronWrapper;
 import co.edu.poli.sw2.services.VigilanciaFactory;
+import co.edu.poli.sw2.services.WrapperSensor;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -592,6 +595,78 @@ public class MainController {
         alerta.setTitle("Control de vuelo");
         alerta.setHeaderText(null);
         alerta.setContentText(controlVuelo.descripcionBreve());
+        alerta.showAndWait();
+    }
+
+    /**
+     * Demuestra el patron Composite armando el arbol de sensores del dron.
+     *
+     * <p>El arbol se construye aqui, en el controlador: los grupos son
+     * {@link Composite} y los sensores concretos son {@link WrapperSensor}.
+     * "Sensor Digital" es a la vez hijo de "Sensor Sonido" y padre de SPI y
+     * UART, lo que demuestra que el arbol se puede anidar a cualquier
+     * profundidad. Al final basta una sola llamada a {@code leer()} sobre la
+     * raiz para recorrerlo completo.</p>
+     */
+    @FXML
+    private void onComposite(ActionEvent event) {
+        WrapperSensor infrarrojo = new WrapperSensor(new Sensor("T-01", "Sensor Infrarrojo", "Melexis"));
+        WrapperSensor rtd = new WrapperSensor(new Sensor("T-02", "RTD", "Honeywell"));
+        WrapperSensor cmos = new WrapperSensor(new Sensor("C-01", "Sensor CMOS", "Sony"));
+        WrapperSensor ccd = new WrapperSensor(new Sensor("C-02", "Sensor CCD", "Teledyne"));
+        WrapperSensor analogico = new WrapperSensor(new Sensor("S-01", "Sensor Analogico", "Bosch"));
+        WrapperSensor spi = new WrapperSensor(new Sensor("D-01", "SPI", "Texas Instruments"));
+        WrapperSensor uart = new WrapperSensor(new Sensor("D-02", "UART", "FTDI"));
+        WrapperSensor inteligente = new WrapperSensor(new Sensor("I-01", "Sensor Inteligente", "Nvidia"));
+
+        Composite temperatura = new Composite();
+        temperatura.add(infrarrojo);
+        temperatura.add(rtd);
+
+        Composite camara = new Composite();
+        camara.add(cmos);
+        camara.add(ccd);
+
+        Composite digital = new Composite();
+        digital.add(spi);
+        digital.add(uart);
+
+        Composite sonido = new Composite();
+        sonido.add(analogico);
+        sonido.add(digital);
+
+        Composite general = new Composite();
+        general.add(temperatura);
+        general.add(camara);
+        general.add(sonido);
+        general.add(inteligente);
+
+        StringBuilder arbol = new StringBuilder();
+        arbol.append("Sensor General\n");
+        arbol.append("├── Sensor Temperatura\n");
+        arbol.append("│   ├── ").append(infrarrojo.leer()).append("\n");
+        arbol.append("│   └── ").append(rtd.leer()).append("\n");
+        arbol.append("├── Sensor Camara\n");
+        arbol.append("│   ├── ").append(cmos.leer()).append("\n");
+        arbol.append("│   └── ").append(ccd.leer()).append("\n");
+        arbol.append("├── Sensor Sonido\n");
+        arbol.append("│   ├── ").append(analogico.leer()).append("\n");
+        arbol.append("│   └── Sensor Digital\n");
+        arbol.append("│       ├── ").append(spi.leer()).append("\n");
+        arbol.append("│       └── ").append(uart.leer()).append("\n");
+        arbol.append("└── ").append(inteligente.leer()).append("\n");
+        arbol.append("\nUna sola llamada a general.leer() recorre los ")
+                .append(general.leer().split("\n").length)
+                .append(" sensores del arbol.");
+
+        // Fuente monoespaciada para que la sangria del arbol quede alineada.
+        Label contenido = new Label(arbol.toString());
+        contenido.setStyle("-fx-font-family: 'Consolas', 'Courier New', monospace; -fx-font-size: 13px;");
+
+        Alert alerta = new Alert(AlertType.INFORMATION);
+        alerta.setTitle("Composite - Arbol de sensores");
+        alerta.setHeaderText(null);
+        alerta.getDialogPane().setContent(contenido);
         alerta.showAndWait();
     }
 
