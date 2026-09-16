@@ -15,7 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Bridge simplificado:
  * <ul>
  *   <li>{@link ControlDrone} define el contrato para los controles de vuelo.</li>
- *   <li>{@link ControlBasico} y {@link ControlAutonomo} son las implementaciones concretas.</li>
+ *   <li>{@link ControlBasico} y {@link ControlAutonomo} son las implementaciones concretas
+ *       con sus respectivos atributos propios de instancia ({@code nivelSensibilidad} y {@code algoritmoNavegacion}).</li>
  *   <li>{@link Drone} no tiene ningún campo ni referencia a {@link ControlDrone}.</li>
  *   <li>{@link ControlDrone} se relaciona con {@link Drone} únicamente como parámetro
  *       en {@link ControlDrone#ejecutarAccion(Drone)} (dependencia "usa" en UML).</li>
@@ -24,33 +25,54 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ControlBridgeTest {
 
     @Test
-    void controlBasicoConDronAgricultura() {
+    void controlBasicoConDronAgriculturaYAtributoPropio() {
         Agricultura agri = new Agricultura("AG-1", "SN-AG1", "AgriMax", "DJI", 15.0, 20.0);
-        ControlDrone control = new ControlBasico();
+        ControlBasico control = new ControlBasico();
 
         assertEquals("Control básico", control.getTipoControl());
         assertEquals("Dron con control básico", control.descripcionBreve());
+        assertEquals(ControlBasico.SENSIBILIDAD_POR_DEFECTO, control.getNivelSensibilidad());
+
+        // Modificamos el atributo propio de instancia
+        control.setNivelSensibilidad(8);
+        assertEquals(8, control.getNivelSensibilidad());
 
         String accion = control.ejecutarAccion(agri);
         assertNotNull(accion);
         assertTrue(accion.contains("Control básico"));
+        assertTrue(accion.contains("sensibilidad: 8"));
         assertTrue(accion.contains("AgriMax"));
         assertTrue(accion.contains("AG-1"));
     }
 
     @Test
-    void controlAutonomoConDronVigilancia() {
+    void controlAutonomoConDronVigilanciaYAtributoPropio() {
         Vigilancia vig = new Vigilancia("VG-1", "SN-VG1", "SkyGuard", "DJI", 8.0, true);
-        ControlDrone control = new ControlAutonomo();
+        ControlAutonomo control = new ControlAutonomo();
 
         assertEquals("Control autónomo", control.getTipoControl());
         assertEquals("Dron con control autónomo", control.descripcionBreve());
+        assertEquals(ControlAutonomo.ALGORITMO_PATRULLAJE, control.getAlgoritmoNavegacion());
+
+        // Probamos cambio a Riego
+        control.setAlgoritmoNavegacion(ControlAutonomo.ALGORITMO_RIEGO);
+        assertEquals(ControlAutonomo.ALGORITMO_RIEGO, control.getAlgoritmoNavegacion());
 
         String accion = control.ejecutarAccion(vig);
         assertNotNull(accion);
         assertTrue(accion.contains("Control autónomo"));
+        assertTrue(accion.contains("algoritmo: Riego"));
         assertTrue(accion.contains("SkyGuard"));
         assertTrue(accion.contains("VG-1"));
+    }
+
+    @Test
+    void constructoresPersonalizadosConAtributosPropios() {
+        ControlBasico basico = new ControlBasico(3);
+        assertEquals(3, basico.getNivelSensibilidad());
+
+        ControlAutonomo autonomo = new ControlAutonomo("Riego");
+        assertEquals(ControlAutonomo.ALGORITMO_RIEGO, autonomo.getAlgoritmoNavegacion());
     }
 
     @Test

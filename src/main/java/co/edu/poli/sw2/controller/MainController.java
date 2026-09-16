@@ -547,6 +547,9 @@ public class MainController {
         }
 
         ControlDrone control = ControlDrone.crear(getTipoControlSeleccionado());
+        if (control instanceof ControlAutonomo autonomo && drone instanceof Agricultura) {
+            autonomo.setAlgoritmoNavegacion(ControlAutonomo.ALGORITMO_RIEGO);
+        }
         control.ejecutarAccion(drone);
 
         Alert alerta = new Alert(AlertType.INFORMATION);
