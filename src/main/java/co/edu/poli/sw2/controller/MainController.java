@@ -547,15 +547,26 @@ public class MainController {
         }
 
         ControlDrone control = ControlDrone.crear(getTipoControlSeleccionado());
-        if (control instanceof ControlAutonomo autonomo && drone instanceof Agricultura) {
-            autonomo.setAlgoritmoNavegacion(ControlAutonomo.ALGORITMO_RIEGO);
+        if (control instanceof ControlAutonomo autonomo) {
+            if (drone instanceof Agricultura) {
+                autonomo.setAlgoritmoNavegacion(ControlAutonomo.ALGORITMO_RIEGO);
+            } else {
+                autonomo.setAlgoritmoNavegacion(ControlAutonomo.ALGORITMO_PATRULLAJE);
+            }
         }
         control.ejecutarAccion(drone);
+
+        String detalleAtributo = "";
+        if (control instanceof ControlBasico basico) {
+            detalleAtributo = "Sensibilidad: " + basico.getNivelSensibilidad();
+        } else if (control instanceof ControlAutonomo autonomo) {
+            detalleAtributo = "Algoritmo de navegación: " + autonomo.getAlgoritmoNavegacion();
+        }
 
         Alert alerta = new Alert(AlertType.INFORMATION);
         alerta.setTitle("Control de vuelo");
         alerta.setHeaderText(null);
-        alerta.setContentText(control.descripcionBreve());
+        alerta.setContentText(control.descripcionBreve() + "\n" + detalleAtributo);
         alerta.showAndWait();
     }
 
