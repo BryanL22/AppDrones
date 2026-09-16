@@ -41,6 +41,18 @@
  *     {@link co.edu.poli.sw2.model.Agricultura}, {@link co.edu.poli.sw2.model.Vigilancia}),
  *     sin que esa asociacion se persista ni sea responsabilidad de
  *     {@link co.edu.poli.sw2.model.Drone}.</li>
+ *     <li>Patron Adapter: permite exportar una
+ *     {@link co.edu.poli.sw2.model.Mision} a un archivo JSON reutilizando un
+ *     servicio que solo sabe escribir texto.
+ *     {@link co.edu.poli.sw2.services.ExportadorMision} es la interfaz con el
+ *     cliente (Target), la unica que conoce el controlador;
+ *     {@link co.edu.poli.sw2.services.ArchivoJson} es el servicio adaptado
+ *     (Adaptee), con una interfaz incompatible a proposito porque recibe un
+ *     String y no sabe nada del modelo; y
+ *     {@link co.edu.poli.sw2.services.MisionJsonAdapter} es el adaptador, que
+ *     implementa la interfaz del cliente mientras envuelve el servicio:
+ *     convierte la mision y sus drones en un String con formato JSON y se lo
+ *     entrega al servicio, que es quien crea el archivo.</li>
  * </ul>
  */
 package co.edu.poli.sw2.services;

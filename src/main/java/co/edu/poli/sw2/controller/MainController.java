@@ -3,8 +3,10 @@ package co.edu.poli.sw2.controller;
 import co.edu.poli.sw2.dao.DroneDAO;
 import co.edu.poli.sw2.model.Agricultura;
 import co.edu.poli.sw2.model.Drone;
+import co.edu.poli.sw2.model.Mision;
 import co.edu.poli.sw2.model.Vigilancia;
 import co.edu.poli.sw2.services.AgriculturaFactory;
+import co.edu.poli.sw2.services.ArchivoJson;
 import co.edu.poli.sw2.services.BateriaAdicional;
 import co.edu.poli.sw2.services.ControlAutonomo;
 import co.edu.poli.sw2.services.ControlBasico;
@@ -14,6 +16,8 @@ import co.edu.poli.sw2.services.DroneFactory;
 import co.edu.poli.sw2.services.DronComponent;
 import co.edu.poli.sw2.services.DronePrototype;
 import co.edu.poli.sw2.services.DronWrapper;
+import co.edu.poli.sw2.services.ExportadorMision;
+import co.edu.poli.sw2.services.MisionJsonAdapter;
 import co.edu.poli.sw2.services.VigilanciaFactory;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -39,6 +43,7 @@ import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Controlador asociado a la vista principal (GestorDrones.fxml).
@@ -593,6 +598,46 @@ public class MainController {
         alerta.setHeaderText(null);
         alerta.setContentText(controlVuelo.descripcionBreve());
         alerta.showAndWait();
+    }
+
+    /**
+     * Demuestra el patrón Adapter: toma una {@link Mision} precargada y la
+     * exporta a un archivo JSON. El controlador solo conoce la interfaz
+     * {@link ExportadorMision}; quien traduce la misión a texto es
+     * {@link MisionJsonAdapter} y quien crea el archivo es
+     * {@link ArchivoJson}.
+     */
+    @FXML
+    private void onExportarMisionJson(ActionEvent event) {
+        Mision mision = misionDeEjemplo();
+        ArchivoJson archivo = new ArchivoJson("misiones/mision-" + mision.getId() + ".json");
+        ExportadorMision exportador = new MisionJsonAdapter(archivo);
+
+        try {
+            exportador.exportar(mision);
+            mostrarAlerta(AlertType.INFORMATION,
+                    "Archivo JSON creado con la misión \"" + mision.getNombre() + "\" y "
+                            + mision.getDrones().size() + " drones.\n\n"
+                            + archivo.getRutaAbsoluta());
+        } catch (IOException e) {
+            mostrarAlerta(AlertType.ERROR, "No se pudo crear el archivo JSON: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Misión precargada que sirve de evidencia para el patrón Adapter: se
+     * arma en memoria, sin pasar por la base de datos, para que el botón
+     * siempre exporte el mismo contenido.
+     *
+     * @return la misión de ejemplo con sus drones.
+     */
+    private Mision misionDeEjemplo() {
+        Mision mision = new Mision("M001", "Inspección de cultivos",
+                "Finca La Esperanza, Rionegro", "2026-09-16");
+        mision.setDrones(List.of(
+                new Agricultura("D001", "SN-AGR-1145", "AgroWing X2", "DJI", 12.4, 18.0),
+                new Vigilancia("D002", "SN-VIG-0932", "SkyGuard 500", "Parrot", 8.1, true)));
+        return mision;
     }
 
     private boolean esVacio(String texto) {

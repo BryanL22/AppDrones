@@ -3,6 +3,18 @@
     -fx-font-family: "Segoe UI";
 }
 
+/* El ScrollPane envuelve toda la vista para que el contenido siga siendo
+   alcanzable cuando la ventana es mas pequena que el. Se deja sin fondo ni
+   borde propios para que se vea el color de .root. */
+.scroll-pane {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
 .label {
     -fx-text-fill: white;
     -fx-font-size: 28px;
