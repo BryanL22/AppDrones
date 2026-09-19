@@ -17,7 +17,6 @@
 
 <HBox alignment="TOP_CENTER"
       spacing="20.0"
-      stylesheets="@../css/style.css"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="co.edu.poli.sw2.controller.MainController">
