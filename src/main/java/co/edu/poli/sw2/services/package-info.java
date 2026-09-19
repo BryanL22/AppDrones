@@ -53,6 +53,15 @@
  *     implementa la interfaz del cliente mientras envuelve el servicio:
  *     convierte la mision y sus drones en un String con formato JSON y se lo
  *     entrega al servicio, que es quien crea el archivo.</li>
+ *     <li>Patron Composite: permite tratar igual a un sensor individual y a un
+ *     grupo de sensores. {@link co.edu.poli.sw2.services.Component} es la
+ *     interfaz comun, con la unica operacion {@code leer()};
+ *     {@link co.edu.poli.sw2.services.WrapperSensor} es la hoja, que envuelve
+ *     un {@link co.edu.poli.sw2.model.Sensor} del modelo y resuelve la lectura
+ *     por si misma; y {@link co.edu.poli.sw2.services.Composite} es el grupo,
+ *     que contiene varios {@code Component} (hojas u otros grupos, por lo que
+ *     el arbol puede anidarse) y al recibir {@code leer()} delega en cada hijo
+ *     y une los resultados. El modelo no se modifica: la hoja solo lo lee.</li>
  * </ul>
  */
 package co.edu.poli.sw2.services;
