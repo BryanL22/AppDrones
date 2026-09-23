@@ -716,6 +716,47 @@ public class MainController {
         alerta.showAndWait();
     }
 
+    /**
+     * Demuestra el patron Facade: le pide a {@link FabricaDrones} un dron de
+     * cada tipo con una sola llamada por tipo.
+     *
+     * <p>A diferencia de los demas patrones, este no vive solo en su boton:
+     * es la misma via por la que ya pasan {@link #onCrear} y
+     * {@link #onActualizar}. El controlador no instancia ninguna factoria
+     * concreta ni sabe como se configuran.</p>
+     */
+    @FXML
+    private void onFacade(ActionEvent event) {
+        Drone agricultura = fabrica.crear(FabricaDrones.TIPO_AGRICULTURA,
+                "A-DEMO", "SN-AGR-DEMO", "AgroWing X2", "DJI", 12.4, 18.0, false);
+        Drone vigilancia = fabrica.crear(FabricaDrones.TIPO_VIGILANCIA,
+                "V-DEMO", "SN-VIG-DEMO", "SkyGuard 500", "Parrot", 8.1, 0, true);
+
+        String mensaje = "Tipos que ofrece el subsistema:\n  "
+                + String.join(", ", fabrica.tiposDisponibles())
+                + "\n\nUna sola llamada por tipo:\n"
+                + "  fabrica.crear(TIPO_AGRICULTURA, ...)\n"
+                + "    -> " + agricultura.getClass().getSimpleName()
+                + " con " + capacidadTanqueDe(agricultura) + " L de tanque\n"
+                + "  fabrica.crear(TIPO_VIGILANCIA, ...)\n"
+                + "    -> " + vigilancia.getClass().getSimpleName()
+                + " con deteccion termica: " + deteccionTermicaDe(vigilancia)
+                + "\n\nEl controlador no instancio AgriculturaFactory ni\n"
+                + "VigilanciaFactory: la fachada eligio por el.\n\n"
+                + "Este mismo camino es el que usan los botones\n"
+                + "Crear y Actualizar.";
+
+        // Fuente monoespaciada para que la sangria del mensaje quede alineada.
+        Label contenido = new Label(mensaje);
+        contenido.setStyle("-fx-font-family: 'Consolas', 'Courier New', monospace; -fx-font-size: 13px;");
+
+        Alert alerta = new Alert(AlertType.INFORMATION);
+        alerta.setTitle("Facade - FabricaDrones");
+        alerta.setHeaderText(null);
+        alerta.getDialogPane().setContent(contenido);
+        alerta.showAndWait();
+    }
+
     private boolean esVacio(String texto) {
         return texto == null || texto.isBlank();
     }

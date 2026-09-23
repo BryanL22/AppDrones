@@ -93,8 +93,12 @@
             <Button text="Builder" prefWidth="150" styleClass="crud-button" onAction="#onBuilder"/>
             <Button text="Decorator" prefWidth="150" styleClass="crud-button" onAction="#onDecorator"/>
             <Button fx:id="btnEjecutarControl" text="Bridge" prefWidth="150" styleClass="crud-button" onAction="#onEjecutarControl"/>
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="10">
             <Button text="Adapter" prefWidth="150" styleClass="crud-button" onAction="#onExportarMisionJson"/>
             <Button text="Composite" prefWidth="150" styleClass="crud-button" onAction="#onComposite"/>
+            <Button text="Facade" prefWidth="150" styleClass="crud-button" onAction="#onFacade"/>
         </HBox>
 
         <HBox alignment="CENTER" spacing="20">
