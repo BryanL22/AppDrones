@@ -6,7 +6,6 @@ import co.edu.poli.sw2.model.Drone;
 import co.edu.poli.sw2.model.Mision;
 import co.edu.poli.sw2.model.Sensor;
 import co.edu.poli.sw2.model.Vigilancia;
-import co.edu.poli.sw2.services.AgriculturaFactory;
 import co.edu.poli.sw2.services.ArchivoJson;
 import co.edu.poli.sw2.services.BateriaAdicional;
 import co.edu.poli.sw2.services.Composite;
@@ -14,13 +13,12 @@ import co.edu.poli.sw2.services.ControlAutonomo;
 import co.edu.poli.sw2.services.ControlBasico;
 import co.edu.poli.sw2.services.ControlVuelo;
 import co.edu.poli.sw2.services.DroneBuilder;
-import co.edu.poli.sw2.services.DroneFactory;
 import co.edu.poli.sw2.services.DronComponent;
 import co.edu.poli.sw2.services.DronePrototype;
 import co.edu.poli.sw2.services.DronWrapper;
 import co.edu.poli.sw2.services.ExportadorMision;
+import co.edu.poli.sw2.services.FabricaDrones;
 import co.edu.poli.sw2.services.MisionJsonAdapter;
-import co.edu.poli.sw2.services.VigilanciaFactory;
 import co.edu.poli.sw2.services.WrapperSensor;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -120,6 +118,7 @@ public class MainController {
     private TableColumn<FilaComparacion, String> colClonComparacion;
 
     private final DroneDAO droneDAO = new DroneDAO();
+    private final FabricaDrones fabrica = new FabricaDrones();
     private final ObservableList<Drone> drones = FXCollections.observableArrayList();
 
     /**
@@ -144,7 +143,7 @@ public class MainController {
         colOriginalComparacion.setCellValueFactory(new PropertyValueFactory<>("original"));
         colClonComparacion.setCellValueFactory(new PropertyValueFactory<>("clon"));
 
-        cbTipo.setItems(FXCollections.observableArrayList(DroneFactory.tiposDisponibles()));
+        cbTipo.setItems(FXCollections.observableArrayList(fabrica.tiposDisponibles()));
         cbTipo.valueProperty().addListener((observable, anterior, nuevoTipo) -> mostrarCamposDeTipo(nuevoTipo));
         mostrarCamposDeTipo(null);
 
@@ -463,22 +462,24 @@ public class MainController {
 
     /**
      * Construye la instancia concreta ({@link Agricultura} o {@link Vigilancia})
-     * segun el tipo elegido en {@link #cbTipo}, delegando en la fabrica
-     * concreta ({@link AgriculturaFactory} o {@link VigilanciaFactory}) que
-     * extiende la plantilla {@link DroneFactory}. Antes de eso, lee y valida
-     * desde la vista el campo propio de la especializacion elegida.
+     * segun el tipo elegido en {@link #cbTipo}, delegando en la fachada
+     * {@link FabricaDrones}. El controlador ya no elige la factoria ni la
+     * configura: solo lee y valida desde la vista el campo propio de la
+     * especializacion y entrega los datos.
      */
     private Drone construirDrone(String tipo, String id, String serial, String modelo, String fabricante,
             double peso) {
-        if (DroneFactory.TIPO_AGRICULTURA.equals(tipo)) {
-            Double capacidadTanque = parsearCapacidadTanque();
-            if (capacidadTanque == null) {
+        double capacidadTanque = 0;
+        if (FabricaDrones.TIPO_AGRICULTURA.equals(tipo)) {
+            Double valor = parsearCapacidadTanque();
+            if (valor == null) {
                 return null;
             }
-            return new AgriculturaFactory(capacidadTanque).crear(id, serial, modelo, fabricante, peso);
+            capacidadTanque = valor;
         }
 
-        return new VigilanciaFactory(chkDeteccionTermica.isSelected()).crear(id, serial, modelo, fabricante, peso);
+        return fabrica.crear(tipo, id, serial, modelo, fabricante, peso,
+                capacidadTanque, chkDeteccionTermica.isSelected());
     }
 
     private void cargarDrones() {
@@ -512,8 +513,8 @@ public class MainController {
     }
 
     private void mostrarCamposDeTipo(String tipo) {
-        boolean esAgricultura = DroneFactory.TIPO_AGRICULTURA.equals(tipo);
-        boolean esVigilancia = DroneFactory.TIPO_VIGILANCIA.equals(tipo);
+        boolean esAgricultura = FabricaDrones.TIPO_AGRICULTURA.equals(tipo);
+        boolean esVigilancia = FabricaDrones.TIPO_VIGILANCIA.equals(tipo);
 
         lblCapacidadTanque.setVisible(esAgricultura);
         lblCapacidadTanque.setManaged(esAgricultura);
@@ -538,10 +539,10 @@ public class MainController {
         rbControlBasico.setSelected(true);
 
         if (drone instanceof Agricultura agricultura) {
-            cbTipo.setValue(DroneFactory.TIPO_AGRICULTURA);
+            cbTipo.setValue(FabricaDrones.TIPO_AGRICULTURA);
             txtCapacidadTanque.setText(String.valueOf(agricultura.getCapacidadTanque()));
         } else if (drone instanceof Vigilancia vigilancia) {
-            cbTipo.setValue(DroneFactory.TIPO_VIGILANCIA);
+            cbTipo.setValue(FabricaDrones.TIPO_VIGILANCIA);
             chkDeteccionTermica.setSelected(vigilancia.isDeteccionTermica());
         } else {
             cbTipo.setValue(null);

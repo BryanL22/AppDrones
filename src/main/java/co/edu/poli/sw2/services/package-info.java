@@ -62,6 +62,16 @@
  *     que contiene varios {@code Component} (hojas u otros grupos, por lo que
  *     el arbol puede anidarse) y al recibir {@code leer()} delega en cada hijo
  *     y une los resultados. El modelo no se modifica: la hoja solo lo lee.</li>
+ *     <li>Patron Facade: {@link co.edu.poli.sw2.services.FabricaDrones} pone
+ *     una sola puerta delante del subsistema de factorias
+ *     ({@link co.edu.poli.sw2.services.DroneFactory} y sus subclases
+ *     {@link co.edu.poli.sw2.services.AgriculturaFactory} y
+ *     {@link co.edu.poli.sw2.services.VigilanciaFactory}). Usar ese subsistema
+ *     directamente obliga a saber que factoria corresponde a cada tipo, que
+ *     cada una se configura por un constructor distinto y que solo despues se
+ *     le puede pedir el dron; la fachada concentra esos pasos en una llamada.
+ *     No reemplaza al Factory Method: las factorias quedan intactas y la
+ *     fachada solo se pone delante para que el controlador no las conozca.</li>
  * </ul>
  */
 package co.edu.poli.sw2.services;
