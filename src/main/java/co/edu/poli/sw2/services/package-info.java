@@ -72,6 +72,16 @@
  *     le puede pedir el dron; la fachada concentra esos pasos en una llamada.
  *     No reemplaza al Factory Method: las factorias quedan intactas y la
  *     fachada solo se pone delante para que el controlador no las conozca.</li>
+ *     <li>Patron Proxy: protege con contrasena el borrado de drones.
+ *     {@link co.edu.poli.sw2.services.ServiceInterface} es la interfaz comun
+ *     que declara la eliminacion;
+ *     {@link co.edu.poli.sw2.services.DronService} es el servicio real, que
+ *     la ejecuta reutilizando el {@link co.edu.poli.sw2.dao.DroneDAO}
+ *     existente; y {@link co.edu.poli.sw2.services.DronServiceProxy}
+ *     implementa la misma interfaz para hacerse pasar por el servicio: pide
+ *     la contrasena y solo delega si es correcta, de modo que una contrasena
+ *     incorrecta nunca llega al DAO ni a la base de datos. Solo se protege la
+ *     eliminacion; el resto del CRUD sigue usando el DAO directamente.</li>
  * </ul>
  */
 package co.edu.poli.sw2.services;

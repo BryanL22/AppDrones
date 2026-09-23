@@ -15,10 +15,13 @@ import co.edu.poli.sw2.services.ControlVuelo;
 import co.edu.poli.sw2.services.DroneBuilder;
 import co.edu.poli.sw2.services.DronComponent;
 import co.edu.poli.sw2.services.DronePrototype;
+import co.edu.poli.sw2.services.DronService;
+import co.edu.poli.sw2.services.DronServiceProxy;
 import co.edu.poli.sw2.services.DronWrapper;
 import co.edu.poli.sw2.services.ExportadorMision;
 import co.edu.poli.sw2.services.FabricaDrones;
 import co.edu.poli.sw2.services.MisionJsonAdapter;
+import co.edu.poli.sw2.services.ServiceInterface;
 import co.edu.poli.sw2.services.WrapperSensor;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -34,6 +37,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -119,6 +123,7 @@ public class MainController {
 
     private final DroneDAO droneDAO = new DroneDAO();
     private final FabricaDrones fabrica = new FabricaDrones();
+    private final ServiceInterface dronService = new DronServiceProxy(new DronService());
     private final ObservableList<Drone> drones = FXCollections.observableArrayList();
 
     /**
@@ -297,15 +302,50 @@ public class MainController {
         }
 
         try {
-            if (droneDAO.eliminar(id)) {
+            if (droneDAO.obtenerPorId(id) == null) {
+                mostrarAlerta(AlertType.ERROR, "No se pudo eliminar el drone. Verifica que el ID exista.");
+                return;
+            }
+
+            String password = pedirPassword();
+            if (password == null) {
+                return;
+            }
+
+            // El borrado pasa por el Proxy: si la contrasena no es correcta,
+            // la solicitud no llega al servicio real.
+            if (dronService.eliminarDron(id, password)) {
                 limpiarFormulario();
                 cargarDrones();
             } else {
-                mostrarAlerta(AlertType.ERROR, "No se pudo eliminar el drone. Verifica que el ID exista.");
+                mostrarAlerta(AlertType.WARNING, "Contrasena incorrecta. No se elimino el drone.");
             }
         } catch (SQLException | IOException e) {
             mostrarAlerta(AlertType.ERROR, "Error de base de datos: " + e.getMessage());
         }
+    }
+
+    /**
+     * Pide la contrasena que protege el borrado. Vive en el controlador y no
+     * en el proxy para que la capa de servicios no dependa de JavaFX.
+     *
+     * @return la contrasena escrita, o {@code null} si se cancelo el dialogo.
+     */
+    private String pedirPassword() {
+        Dialog<String> dialogo = new Dialog<>();
+        dialogo.setTitle("Eliminar drone");
+        dialogo.setHeaderText("Ingresa la contrasena para eliminar el drone.");
+
+        ButtonType btnAceptar = new ButtonType("Aceptar", ButtonBar.ButtonData.OK_DONE);
+        dialogo.getDialogPane().getButtonTypes().addAll(btnAceptar, ButtonType.CANCEL);
+
+        PasswordField campoPassword = new PasswordField();
+        campoPassword.setPromptText("Contrasena");
+        dialogo.getDialogPane().setContent(campoPassword);
+
+        dialogo.setResultConverter(boton -> boton == btnAceptar ? campoPassword.getText() : null);
+
+        return dialogo.showAndWait().orElse(null);
     }
 
     /**
