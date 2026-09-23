@@ -2,8 +2,6 @@ package co.edu.poli.sw2.services;
 
 import org.junit.jupiter.api.Test;
 
-import co.edu.poli.sw2.services.Conexion;
-
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +20,7 @@ class ConexionTest {
                 "# comentario",
                 "",
                 "   ",
-                "DB_USER=root"
-        ));
+                "DB_USER=root"));
 
         assertEquals(1, variables.size());
         assertEquals("root", variables.get("DB_USER"));
@@ -39,13 +36,11 @@ class ConexionTest {
     @Test
     void parsearEnvSoportaValoresConSignosDeIgualAdicionales() {
         Map<String, String> variables = Conexion.parsearEnv(List.of(
-                "DB_URL=jdbc:mysql://localhost:3306/appdrones?useSSL=false&serverTimezone=UTC"
-        ));
+                "DB_URL=jdbc:mysql://localhost:3306/appdrones?useSSL=false&serverTimezone=UTC"));
 
         assertEquals(
                 "jdbc:mysql://localhost:3306/appdrones?useSSL=false&serverTimezone=UTC",
-                variables.get("DB_URL")
-        );
+                variables.get("DB_URL"));
     }
 
     @Test
